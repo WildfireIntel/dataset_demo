@@ -1,0 +1,5 @@
+{
+  "gridPlots": true,
+  "csvFiles": ["grid_plots/merged_planning_grid.csv"],
+  "images": []
+}

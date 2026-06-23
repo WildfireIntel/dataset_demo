@@ -1,0 +1,22 @@
+{
+  "exp_id": 0,
+  "method": "Bonferroni",
+  "method_slug": "bonferroni",
+  "worst_value": 48719880.90013521,
+  "best_lower": 48719880.90013518,
+  "best_upper": 48719880.90013521,
+  "gap": 6.117076199094855e-16,
+  "timed_out": false,
+  "elapsed_sec": 0.32450413703918457,
+  "last_iter": 2,
+  "x_sum": 154,
+  "y_sum": 1,
+  "n_circuits": 803,
+  "C_budget": 240.89999999999998,
+  "B_budget": 321.20000000000005,
+  "W_cap": 630327.9860876623,
+  "alpha_eff": 0.9,
+  "gamma": 0.9,
+  "delta": 1.0,
+  "use_group_bounds": false
+}

@@ -1,0 +1,22 @@
+{
+  "exp_id": 0,
+  "method": "Co-Optimized",
+  "method_slug": "co_optimized",
+  "worst_value": 749825.9319880833,
+  "best_lower": 749825.9319880833,
+  "best_upper": 749825.9319880833,
+  "gap": 0.0,
+  "timed_out": false,
+  "elapsed_sec": 0.0889430046081543,
+  "last_iter": 1,
+  "x_sum": 188,
+  "y_sum": 160,
+  "n_circuits": 803,
+  "C_budget": 240.89999999999998,
+  "B_budget": 160.60000000000002,
+  "W_cap": 840437.3147835498,
+  "alpha_eff": 0.9,
+  "gamma": 0.8,
+  "delta": 1.0,
+  "use_group_bounds": false
+}

@@ -1,0 +1,56 @@
+{
+  "kind": "optimization_grid_setup",
+  "optimization": {
+    "B_budget": 0.2,
+    "C_budget": 0.3,
+    "W_cap_fraction": 0.1,
+    "alpha": 0.4,
+    "alpha_effective": 0.9,
+    "delta": 1.0,
+    "gamma": 0.8,
+    "time_limit_sec": 120.0
+  },
+  "prediction": {
+    "agg_freq": "YS",
+    "alpha": 0.4,
+    "base_cal_seed": 2000,
+    "base_test_seed": 3000,
+    "base_train_seed": 1000,
+    "circuit_meta_csv": "/Users/ryanchen/Downloads/long_term_psps_investment/sect-optimize-notebooks/interim/circuit_metadata.csv",
+    "group_seed": 42,
+    "hftd_tiers": [
+      "Tier 2",
+      "Tier 3"
+    ],
+    "n_experiments": 1,
+    "n_groups": 5,
+    "n_oracle_groups": 5,
+    "n_pca_components": 8,
+    "n_syn_cal": 200,
+    "n_syn_train": 20,
+    "oracle_block_sigma": 1.5,
+    "panel_csv": "/Users/ryanchen/Downloads/long_term_psps_investment/sect-optimize-notebooks/interim/panel_data_weather_elevation_ignition.csv",
+    "poisson_alpha": 0.001,
+    "real_years": [
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "use_demo_data": false,
+    "use_unit_effects": true,
+    "var_lags": 1,
+    "weather_cols": [
+      "wind_speed",
+      "relative_humidity",
+      "temperature",
+      "fuel_moisture_10hr",
+      "vapor_pressure_deficit"
+    ]
+  },
+  "prediction_setup_dir": "/Users/ryanchen/Downloads/real_experiment/outputs/prediction_results_grid/a0p4__exp1__train20__cal200__grp5__5630963faa",
+  "prediction_setup_slug": "a0p4__exp1__train20__cal200__grp5__5630963faa",
+  "run": {
+    "exp_id": null
+  }
+}

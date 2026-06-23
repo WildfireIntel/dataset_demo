@@ -1,0 +1,22 @@
+{
+  "exp_id": 0,
+  "method": "Group Conformal (fixed)",
+  "method_slug": "group_conformal_fixed",
+  "worst_value": 6270860.789251618,
+  "best_lower": 6390593.294181072,
+  "best_upper": 6270860.789251618,
+  "gap": -0.019093472005418777,
+  "timed_out": false,
+  "elapsed_sec": 44.37082481384277,
+  "last_iter": 16,
+  "x_sum": 232,
+  "y_sum": 0,
+  "n_circuits": 803,
+  "C_budget": 240.89999999999998,
+  "B_budget": 401.5,
+  "W_cap": 840437.3147835498,
+  "alpha_eff": 0.9,
+  "gamma": 0.95,
+  "delta": 1.0,
+  "use_group_bounds": true
+}

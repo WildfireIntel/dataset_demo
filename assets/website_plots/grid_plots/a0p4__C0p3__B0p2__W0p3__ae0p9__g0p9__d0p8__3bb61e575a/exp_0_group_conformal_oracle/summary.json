@@ -1,0 +1,22 @@
+{
+  "exp_id": 0,
+  "method": "Group Conformal (oracle)",
+  "method_slug": "group_conformal_oracle",
+  "worst_value": 6296118.833336892,
+  "best_lower": 4101748.0512441825,
+  "best_upper": 6296118.833336892,
+  "gap": 0.34852753580092616,
+  "timed_out": true,
+  "elapsed_sec": 120.08289313316345,
+  "last_iter": 11,
+  "x_sum": 240,
+  "y_sum": 0,
+  "n_circuits": 803,
+  "C_budget": 240.89999999999998,
+  "B_budget": 160.60000000000002,
+  "W_cap": 1260655.9721753246,
+  "alpha_eff": 0.9,
+  "gamma": 0.9,
+  "delta": 0.8,
+  "use_group_bounds": true
+}

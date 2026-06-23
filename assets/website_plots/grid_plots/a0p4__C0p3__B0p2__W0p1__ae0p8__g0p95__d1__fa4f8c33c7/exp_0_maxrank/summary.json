@@ -1,0 +1,22 @@
+{
+  "exp_id": 0,
+  "method": "MaxRank",
+  "method_slug": "maxrank",
+  "worst_value": 31603437.159770057,
+  "best_lower": 31603437.159765948,
+  "best_upper": 31603437.159770057,
+  "gap": 1.3001735154409349e-13,
+  "timed_out": false,
+  "elapsed_sec": 0.3190021514892578,
+  "last_iter": 2,
+  "x_sum": 112,
+  "y_sum": 0,
+  "n_circuits": 803,
+  "C_budget": 240.89999999999998,
+  "B_budget": 160.60000000000002,
+  "W_cap": 420218.6573917749,
+  "alpha_eff": 0.8,
+  "gamma": 0.95,
+  "delta": 1.0,
+  "use_group_bounds": false
+}

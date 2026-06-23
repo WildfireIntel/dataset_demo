@@ -1,222 +1,386 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ADIL @ CMU — Adaptive Decision Intelligence Lab</title>
-  <link rel="stylesheet" href="assets/css/style.css">
-  <style>
-    .hero {
-      background: linear-gradient(135deg, var(--dark) 0%, #2d1b4e 100%);
-      color: #fff;
-      padding: 108px 48px 88px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      width: 560px; height: 560px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(196,18,48,0.18) 0%, transparent 70%);
-      top: -180px; right: -80px;
-      pointer-events: none;
-    }
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: normal;
-      line-height: 1.2;
-      margin-bottom: 18px;
-    }
-    .hero h1 em { font-style: normal; color: var(--accent); }
-    .hero p {
-      font-size: 1.08rem;
-      color: rgba(255,255,255,0.7);
-      max-width: 580px;
-      margin: 0 auto 34px;
-    }
-    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .btn-hero-outline {
-      border: 1.5px solid rgba(255,255,255,0.38);
-      color: #fff;
-      padding: 10px 26px;
-      border-radius: 4px;
-      font-family: 'Arial', sans-serif;
-      font-size: 0.86rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.18s;
-    }
-    .btn-hero-outline:hover {
-      border-color: #fff;
-      background: rgba(255,255,255,0.08);
-      text-decoration: none;
-    }
-    .home-about {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 52px;
-      align-items: start;
-    }
-    .tag-wrap { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 10px; }
-    .tag-pill-link {
-      display: inline-block;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--border);
-      padding: 5px 13px;
-      font-family: 'Arial', sans-serif;
-      font-size: 0.8rem;
-      color: var(--gray);
-      border-radius: 2px;
-      text-decoration: none;
-      transition: all 0.18s;
-      cursor: pointer;
-    }
-    .tag-pill-link::after { content: " →"; font-size: 0.72rem; opacity: 0.5; }
-    .tag-pill-link:hover {
-      border-color: var(--dark);
-      border-left-color: var(--dark);
-      color: var(--dark);
-      text-decoration: none;
-    }
-    @media (max-width: 680px) {
-      .hero { padding: 72px 20px 60px; }
-      .home-about { grid-template-columns: 1fr; gap: 28px; }
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sectionalization and Fast-Trip Planning for Ignition Risk Mitigation</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+
+<style>
+  .page__inner-wrap { max-width: 3800px; width: 100%; }
+</style>
+
+
 </head>
 <body>
+<div id="sect-fasttrip-psps" class="sfps-page" data-base-path=".">
 
-<nav id="main-nav"></nav>
-<script src="assets/js/nav.js"></script>
+  <div class="sfps-fullbleed">
+    <p class="sfps-intro">
+      Utility-caused wildfires pose severe risks, and operational interventions
+      like PSPS and fast-trip settings reduce ignition likelihood at the cost of
+      service reliability. This visualization highlights how hyperparameter
+      choices shape the tradeoffs between ignition risk mitigation and reliability
+      in our adaptive robust optimization framework for coordinated
+      sectionalization and operational planning.
+    </p>
+    <p class="sfps-intro">
+      See our
+      <a href="https://arxiv.org/abs/2604.01232" rel="noopener noreferrer">paper</a>
+      for the detailed model and case study results.
+    </p>
+    <nav class="sfps-tabs" role="tablist" aria-label="Sectionalization tabs">
+      <button
+        id="sfps-tab-btn-sectionalization"
+        class="sfps-tab-button is-active"
+        type="button" role="tab" aria-selected="true"
+        aria-controls="sfps-tab-sectionalization"
+        data-tab="sfps-tab-sectionalization"
+      >Planning Tool</button>
+      <button
+        id="sfps-tab-btn-conformal"
+        class="sfps-tab-button"
+        type="button" role="tab" aria-selected="false"
+        aria-controls="sfps-tab-conformal"
+        data-tab="sfps-tab-conformal"
+      >Conformal Prediction Demo</button>
+      <button
+        id="sfps-tab-btn-historical"
+        class="sfps-tab-button"
+        type="button" role="tab" aria-selected="false"
+        aria-controls="sfps-tab-historical"
+        data-tab="sfps-tab-historical"
+      >Historical Data</button>
+      <button
+        id="sfps-tab-btn-optimization"
+        class="sfps-tab-button"
+        type="button" role="tab" aria-selected="false"
+        aria-controls="sfps-tab-optimization"
+        data-tab="sfps-tab-optimization"
+      >Optimization Results</button>
+    </nav>
 
-<header class="hero">
-  <h1>Adaptive Decision<br><em>Intelligence Lab</em></h1>
-  <p>We develop machine learning and optimization methods for robust, data-driven decisions in complex, high-stakes environments.</p>
-  <div class="hero-btns">
-    <a class="btn btn-red" href="research.html">Our Research</a>
-    <a class="btn-hero-outline" href="people.html">Meet the Team</a>
-    <a class="btn-hero-outline" href="publications.html">Publications</a>
-  </div>
-</header>
+    <div class="sfps-tab-panels">
 
-<!-- About -->
-<section class="pad bg-light">
-  <div class="container">
-    <div class="home-about">
-      <div>
-        <p class="eyebrow">About the lab</p>
-        <h2 class="section-title">Bridging Learning &amp; Decision-Making</h2>
-        <p style="color:var(--gray);font-size:1rem;margin-bottom:14px;">The Adaptive Decision Intelligence Lab (ADIL) at Carnegie Mellon University investigates the intersection of machine learning, optimization, and sequential decision-making under uncertainty.</p>
-        <p style="color:var(--gray);font-size:1rem;">Our work spans theoretical foundations and real-world applications — from energy systems resilience to AI-assisted planning — with an emphasis on methods that are both statistically rigorous and practically deployable.</p>
-        <br>
-        <a class="btn btn-outline" href="research.html">Explore research &rarr;</a>
-      </div>
-      <div>
-        <p class="eyebrow" style="margin-bottom:14px;">Research themes</p>
-        <div class="tag-wrap" id="theme-tags">
-          <!-- rendered by JS from RESEARCH_AREAS -->
+      <!-- ═══════════════════════════════════════════════════════════════
+           TAB 1 · PLANNING TOOL
+           ═══════════════════════════════════════════════════════════════ -->
+      <section
+        id="sfps-tab-sectionalization"
+        class="sfps-section sfps-tab-panel is-active"
+        role="tabpanel"
+        aria-labelledby="sfps-tab-btn-sectionalization"
+      >
+        <div class="sfps-split">
+
+          <!-- Controls panel -->
+          <div class="sfps-panel sfps-controls" id="planning-controls">
+            <div class="sfps-controls-header">
+              <span class="sfps-controls-title">Parameters</span>
+            </div>
+            <div id="image-params" class="sfps-params-grid-ctrl"></div>
+            <div id="image-status" class="sfps-status"></div>
+            <button id="reset-part2" class="sfps-button sfps-button--ghost sfps-button--download">↺ Reset</button>
+            <button id="download-results" class="sfps-button sfps-button--ghost sfps-button--download">⬇ Download Results</button>
+          </div>
+
+          <!-- Three-method map comparison -->
+          <div class="sfps-content">
+            <div class="sfps-method-compare" id="method-compare">
+
+              <div class="sfps-method-col sfps-method-col--ours">
+                <div class="sfps-method-header sfps-method-header--ours">
+                  <span class="sfps-method-name">Ours</span>
+                </div>
+                <div class="sfps-image-wrap sfps-image-wrap--method">
+                  <img id="decision-image-ours" alt="Ours decision map" loading="lazy" />
+                </div>
+                <div class="sfps-metrics-row" id="metrics-ours">
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Sectionalized</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Fast-Trip</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Actual PSPS</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Eval. Cost</span></div>
+                </div>
+              </div>
+
+              <div class="sfps-method-col sfps-method-col--bonf">
+                <div class="sfps-method-header sfps-method-header--bonf">
+                  <span class="sfps-method-name">Co-Optimized</span>
+                </div>
+                <div class="sfps-image-wrap sfps-image-wrap--method">
+                  <img id="decision-image-bonf" alt="Bonferroni decision map" loading="lazy" />
+                </div>
+                <div class="sfps-metrics-row" id="metrics-bonf">
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Sectionalized</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Fast-Trip</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Actual PSPS</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Eval. Cost</span></div>
+                </div>
+              </div>
+
+              <div class="sfps-method-col sfps-method-col--maxrank">
+                <div class="sfps-method-header sfps-method-header--maxrank">
+                  <span class="sfps-method-name">Planning-Only</span>
+                </div>
+                <div class="sfps-image-wrap sfps-image-wrap--method">
+                  <img id="decision-image-maxrank" alt="Planning only decision map" loading="lazy" />
+                </div>
+                <div class="sfps-metrics-row" id="metrics-maxrank">
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Sectionalized</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Fast-Trip</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Actual PSPS</span></div>
+                  <div class="sfps-metric-card sfps-metric-skeleton"><span class="sfps-metric-value">—</span><span class="sfps-metric-label">Eval. Cost</span></div>
+                </div>
+              </div>
+
+            </div><!-- /method-compare -->
+
+
+          </div><!-- /sfps-content -->
+        </div><!-- /sfps-split -->
+
+        <!-- Understanding parameters section -->
+        <section class="sfps-fullbleed sfps-params-section" aria-labelledby="sfps-params-heading">
+          <h2 id="sfps-params-heading" class="sfps-params-heading">Understanding the key parameters</h2>
+          <p class="sfps-params-intro">
+            We do optimal planning under operational and physical constraints, with statistical control in prediction. Below is a guide to the main modeling assumptions and parameters.
+          </p>
+
+          <div class="sfps-params-group">
+            <h3 class="sfps-params-group-title">Main assumptions</h3>
+            <div class="sfps-params-row">
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">Uncertainty set validity</h4>
+                <p>Future ignition risk is uncertain, but its range can be estimated from historical ignition data and weather features through a data-driven uncertainty set.</p>
+              </div>
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">Effectiveness of PSPS and fast-trip</h4>
+                <p>PSPS eliminates ignition risk on a de-energized circuit, while fast-trip only reduces a percentage of ignition risk on a protected circuit.</p>
+              </div>
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">Optimal PSPS reaction</h4>
+                <p>PSPS decisions are made optimally after ignition risk is realized (or when it can be well predicted), but must conform to a system-level reliability constraint shared with fast-trip devices deployed proactively.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sfps-params-group">
+            <h3 class="sfps-params-group-title">Planning budgets</h3>
+            <p class="sfps-params-group-desc">Limits on how much of the system can adopt sectionalization or fast-trip infrastructure.</p>
+            <div class="sfps-params-row">
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">Sect. budget (% of circuits)</h4>
+                <p>The maximum share of all circuits that can be sectionalized—prepared so they can be shut off in segments during a PSPS event instead of all at once. A higher budget allows more granular shutoffs (fewer customers affected per event) but requires more upfront investment and coordination.</p>
+              </div>
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">Fast-trip budget (% of circuits)</h4>
+                <p>The maximum share of all circuits that can be assigned fast-trip settings—operational settings that reduce ignition risk by tripping more quickly under fault conditions. More circuits with fast-trip can reduce ignition risk but may increase momentary outages.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sfps-params-group">
+            <h3 class="sfps-params-group-title">Reliability constraint and mitigation impact</h3>
+            <p class="sfps-params-group-desc">Parameters that determine how PSPS and fast-trip actions count toward the system-wide reliability cap.</p>
+            <div class="sfps-params-row">
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">SAIFI Cap</h4>
+                <p>A cap on the average number of interruptions per customer from PSPS and fast-trip actions combined. For example, SAIFI Cap = 0.2 means a California customer should not experience more than 0.2 wildfire-mitigation outages in the planning year. Annual system SAIFI is ~1 by industry standard, so we consider a range of [0.1, 0.3] for mitigation-only interruptions.</p>
+              </div>
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">Reliability Impact of PSPS</h4>
+                <p>If circuit <em>i</em> serves <em>h<sub>i</sub></em> customers, one PSPS event contributes (<em>h<sub>i</sub></em> / total system customers) to SAIFI. Since one PSPS action causes a single outage to all customers on that circuit, we use 1 to represent its relative per-event contribution to SAIFI.</p>
+              </div>
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">Reliability Impact of Fast-Trip</h4>
+                <p>Fast-trip contributes (<em>h<sub>i</sub></em> × expected activations per circuit-year / total customers) to SAIFI—discounted relative to PSPS because activations per year are typically less than 1. Based on 2024 PG&amp;E data (~2,500 EPSS events across ~3,000 circuits), this averages ~0.83 per circuit-year, so we use a range of [0.8, 0.9, 0.95].</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sfps-params-group">
+            <h3 class="sfps-params-group-title">Physical constraints</h3>
+            <p class="sfps-params-group-desc">Parameters that link mitigation choices to their ignition risk reduction.</p>
+            <div class="sfps-params-row">
+              <div class="sfps-param-block">
+                <h4 class="sfps-param-title">Effectiveness of fast-trip (% of mitigation)</h4>
+                <p>How effective fast-trip (EPSS) is at controlling ignition risk—the degree to which enabling fast-trip on a circuit reduces its ignition probability. Higher effectiveness means the model treats fast-trip as a stronger mitigation lever.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sfps-params-group">
+            <h3 class="sfps-params-group-title">Hierarchical uncertainty set and coverage guarantee</h3>
+            <p>For a given planning window, we build a <strong>hierarchical polyhedral uncertainty set</strong> that encodes plausible future circuit-level ignition counts. The set imposes bounds on each circuit and on the sum of counts within each group (e.g., districts or climate zones).</p>
+            <p>For a prescribed level α ∈ (0, 1), we construct the set so that the probability the realized outcome falls inside the set is at least 1 − α—controlling the chance that the true outcome lies outside the predicted set to at most α. In practice, our method controls the error rate of the predicted uncertainty set for all circuits and groups to (at most) 0.5.</p>
+          </div>
+        </section>
+
+        <!-- Key insights section -->
+        <section class="sfps-fullbleed sfps-params-section" aria-labelledby="sfps-insights-tab1-heading">
+          <h2 id="sfps-insights-tab1-heading" class="sfps-params-heading">Key insights</h2>
+          <div class="sfps-params-row">
+            <div class="sfps-param-block">
+              <h4 class="sfps-param-title">Coordinated planning outperforms separation</h4>
+              <p>Coordinating long-term infrastructure planning with short-term operational decisions can outperform treating them as separate problems.</p>
+            </div>
+            <div class="sfps-param-block">
+              <h4 class="sfps-param-title">Flexibility enables targeted interventions</h4>
+              <p>Infrastructure configurations that improve operational flexibility enable more targeted interventions during high-risk conditions, reducing unnecessary shutoffs.</p>
+            </div>
+            <div class="sfps-param-block">
+              <h4 class="sfps-param-title">Risk reduction within reliability limits</h4>
+              <p>The coordinated approach can reduce wildfire ignition risk while still respecting system-wide reliability constraints on customer interruptions.</p>
+            </div>
+            <div class="sfps-param-block">
+              <h4 class="sfps-param-title">Calibrated uncertainty avoids conservatism</h4>
+              <p>Better-calibrated uncertainty sets avoid unnecessary conservatism, leading to more effective plans that act where risk is truly elevated.</p>
+            </div>
+          </div>
+        </section>
+
+      </section><!-- /tab-sectionalization -->
+
+
+      <!-- ═══════════════════════════════════════════════════════════════
+           TAB 2 · CONFORMAL PREDICTION DEMO
+           ═══════════════════════════════════════════════════════════════ -->
+      <section
+        id="sfps-tab-conformal"
+        class="sfps-section sfps-tab-panel sfps-tab-panel--conformal"
+        role="tabpanel"
+        aria-labelledby="sfps-tab-btn-conformal"
+        hidden
+      >
+        <div id="conformal-demo-root" class="sfps-conformal-root" aria-label="Conformal Prediction Demo"></div>
+      </section>
+
+
+      <!-- ═══════════════════════════════════════════════════════════════
+           TAB 3 · HISTORICAL DATA ANALYSIS
+           ═══════════════════════════════════════════════════════════════ -->
+      <section
+        id="sfps-tab-historical"
+        class="sfps-section sfps-tab-panel"
+        role="tabpanel"
+        aria-labelledby="sfps-tab-btn-historical"
+        hidden
+      >
+        <div class="sfps-historical-layout">
+          <div class="sfps-panel sfps-controls sfps-historical-controls">
+            <div class="sfps-field sfps-field--year">
+              <label for="historical-year" class="sfps-year-label">Year</label>
+              <input id="historical-year" type="range" />
+              <div id="historical-year-value" class="sfps-year-badge"></div>
+            </div>
+          </div>
+
+          <div class="sfps-historical-content">
+            <div id="historical-plots-rank" class="sfps-historical-grid sfps-historical-grid--rank"></div>
+            <div id="historical-plots-summary" class="sfps-historical-grid sfps-historical-grid--summary"></div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
-<!-- News -->
-<section class="pad">
-  <div class="container">
-    <h2 class="section-title">News</h2>
-    <ul class="news-list" id="news-list">
-      <li class="news-item"><span class="news-text" style="color:#aaa;">Loading…</span></li>
-    </ul>
-  </div>
-</section>
 
-<!-- Team preview -->
-<section class="pad bg-light">
-  <div class="container">
-    <h2 class="section-title">The team</h2>
-    <div class="people-grid" id="team-grid"></div>
-    <br>
-    <a class="btn btn-outline" href="people.html">View all people &rarr;</a>
-  </div>
-</section>
+      <!-- ═══════════════════════════════════════════════════════════════
+           TAB 4 · OPTIMIZATION RESULTS
+           ═══════════════════════════════════════════════════════════════ -->
+      <section
+        id="sfps-tab-optimization"
+        class="sfps-section sfps-tab-panel"
+        role="tabpanel"
+        aria-labelledby="sfps-tab-btn-optimization"
+        hidden
+      >
+        <div class="sfps-split">
+          <div class="sfps-panel sfps-controls">
+            <div class="sfps-controls-header">
+              <span class="sfps-controls-title">Chart Settings</span>
+            </div>
+            <div class="sfps-field">
+              <label for="x-axis">X axis</label>
+              <select id="x-axis"></select>
+            </div>
+            <div class="sfps-controls-section-label">Filters</div>
+            <div id="filter-controls" class="sfps-grid"></div>
+            <button id="reset-part1" class="sfps-button sfps-button--ghost sfps-button--download">↺ Reset</button>
+          </div>
 
-<footer>
-  <div class="footer-name">Adaptive Decision Intelligence Lab</div>
-  <p>Carnegie Mellon University &nbsp;&bull;&nbsp;
-    <a href="https://www.andrew.cmu.edu/user/shixianz/" target="_blank" rel="noopener">Shixiang (Woody) Zhu</a>
-  </p>
-</footer>
+          <div class="sfps-content">
+            <div class="sfps-plot-grid">
+              <div class="sfps-plot-card">
+                <h3 class="sfps-plot-title" id="plot-title-left">Optimization Results</h3>
+                <div id="trend-plot-opt" class="sfps-plot"></div>
+                <div class="sfps-plot-under-controls">
+                  <div class="sfps-field">
+                    <label for="y-axis-left">Y axis</label>
+                    <select id="y-axis-left"></select>
+                  </div>
+                  <div class="sfps-field">
+                    <label for="method-left">Method</label>
+                    <select id="method-left"></select>
+                  </div>
+                </div>
+              </div>
+              <div class="sfps-plot-card">
+                <h3 class="sfps-plot-title" id="plot-title-right">Evaluation</h3>
+                <div id="trend-plot-true" class="sfps-plot"></div>
+                <div class="sfps-plot-under-controls">
+                  <div class="sfps-field">
+                    <label for="y-axis-right">Y axis</label>
+                    <select id="y-axis-right"></select>
+                  </div>
+                  <div class="sfps-field">
+                    <label for="method-right">Method</label>
+                    <select id="method-right"></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-<!-- Data -->
-<script src="data/news.js"></script>
-<script src="data/publications.js"></script>
-<script src="data/people.js"></script>
-<script>
-  /* ── Research theme tags (link to research.html anchors) ── */
-  const RESEARCH_AREAS = [
-    { label: "Decision-Aware Learning",                       id: "decision-aware"          },
-    { label: "Conformal Prediction & Risk Calibration",       id: "conformal-risk"          },
-    { label: "Energy, Infrastructure & Climate Resilience",   id: "energy-resilience"       },
-    { label: "Spatio-Temporal Modeling & Event Detection",    id: "spatiotemporal-detection"},
-    { label: "Causal, Counterfactual & Fair AI",              id: "causal-fair"             },
-    { label: "Human-AI & Personalized Decision Support",      id: "human-ai-decisions"      },
-  ];
+        <!-- Key insights section -->
+        <section class="sfps-fullbleed sfps-params-section" aria-labelledby="sfps-insights-heading">
+          <h2 id="sfps-insights-heading" class="sfps-params-heading">Key insights</h2>
+          <div class="sfps-params-row">
+            <div class="sfps-param-block">
+              <h4 class="sfps-param-title">Coordinated planning outperforms separation</h4>
+              <p>Coordinating long-term infrastructure planning with short-term operational decisions can outperform treating them as separate problems.</p>
+            </div>
+            <div class="sfps-param-block">
+              <h4 class="sfps-param-title">Flexibility enables targeted interventions</h4>
+              <p>Infrastructure configurations that improve operational flexibility enable more targeted interventions during high-risk conditions, reducing unnecessary shutoffs.</p>
+            </div>
+            <div class="sfps-param-block">
+              <h4 class="sfps-param-title">Risk reduction within reliability limits</h4>
+              <p>The coordinated approach can reduce wildfire ignition risk while still respecting system-wide reliability constraints on customer interruptions.</p>
+            </div>
+            <div class="sfps-param-block">
+              <h4 class="sfps-param-title">Calibrated uncertainty avoids conservatism</h4>
+              <p>Better-calibrated uncertainty sets avoid unnecessary conservatism, leading to more effective plans that act where risk is truly elevated.</p>
+            </div>
+          </div>
+        </section>
 
-  const tagWrap = document.getElementById('theme-tags');
-  RESEARCH_AREAS.forEach(area => {
-    const a = document.createElement('a');
-    a.className = 'tag-pill-link';
-    a.href = 'research.html#' + area.id;
-    a.textContent = area.label;
-    tagWrap.appendChild(a);
-  });
+      </section>
 
-  /* ── News ── */
-  function esc(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+    </div><!-- /sfps-tab-panels -->
+  </div><!-- /sfps-fullbleed -->
 
-  const newsList = document.getElementById('news-list');
-  newsList.innerHTML = '';
-  NEWS.slice(0, 6).forEach(item => {
-    const li = document.createElement('li');
-    li.className = 'news-item';
-    li.innerHTML = `<span class="news-date">${esc(item.date)}</span><span class="news-text">${esc(item.text)}</span>`;
-    newsList.appendChild(li);
-  });
+</div><!-- /sect-fasttrip-psps -->
 
-  /* ── Team preview ── */
-  const teamGrid = document.getElementById('team-grid');
-  const teamMembers = [
-    ...(PEOPLE.faculty      || []).map(p => ({ ...p, _section: 'faculty' })),
-    ...(PEOPLE.postdocs     || []).map(p => ({ ...p, _section: 'postdoc' })),
-    ...(PEOPLE.phd_students || []).map(p => ({ ...p, _section: 'phd' })),
-  ];
-  teamMembers.forEach(person => {
-    const isPi = person._section === 'faculty';
-    const avatarContent = person.photo
-      ? `<img src="${esc(person.photo)}" alt="${esc(person.name)}">`
-      : esc(person.initials);
-    const firstLink = (person.links || [])[0];
-    const linkHtml = firstLink
-      ? `<a class="person-link" href="${esc(firstLink.url)}" target="_blank" rel="noopener">${esc(firstLink.label)} &rarr;</a>`
-      : '';
-    const card = document.createElement('div');
-    card.className = isPi ? 'person-card pi' : 'person-card';
-    card.innerHTML = `
-      <div class="person-avatar">${avatarContent}</div>
-      <div class="person-body">
-        <div class="person-name">${esc(person.name)}</div>
-        <div class="person-role">${esc(person.role)}</div>
-        ${linkHtml}
-      </div>`;
-    teamGrid.appendChild(card);
-  });
-</script>
-
+<link rel="stylesheet" href="./assets/css/sect-fasttrip-psps.css">
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script src="./assets/js/sect-fasttrip-psps.js"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" data-presets="react" src="./assets/js/conformal_demo.js"></script>
 </body>
 </html>

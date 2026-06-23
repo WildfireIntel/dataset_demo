@@ -1,0 +1,22 @@
+{
+  "exp_id": 0,
+  "method": "Group Conformal (random)",
+  "method_slug": "group_conformal_random",
+  "worst_value": 4564923.756790741,
+  "best_lower": 4772230.457171882,
+  "best_upper": 4564923.756790741,
+  "gap": -0.04541296009002397,
+  "timed_out": false,
+  "elapsed_sec": 12.776315927505493,
+  "last_iter": 6,
+  "x_sum": 165,
+  "y_sum": 0,
+  "n_circuits": 803,
+  "C_budget": 240.89999999999998,
+  "B_budget": 160.60000000000002,
+  "W_cap": 840437.3147835498,
+  "alpha_eff": 0.9,
+  "gamma": 0.95,
+  "delta": 1.0,
+  "use_group_bounds": true
+}

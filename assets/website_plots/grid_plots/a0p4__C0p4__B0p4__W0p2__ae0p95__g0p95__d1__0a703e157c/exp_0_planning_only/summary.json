@@ -1,0 +1,22 @@
+{
+  "exp_id": 0,
+  "method": "Planning-only",
+  "method_slug": "planning_only",
+  "worst_value": 0.0,
+  "best_lower": 0.0,
+  "best_upper": 0.0,
+  "gap": 7.90088422490949e-05,
+  "timed_out": false,
+  "elapsed_sec": 0.05794095993041992,
+  "last_iter": 1,
+  "x_sum": 321,
+  "y_sum": 321,
+  "n_circuits": 803,
+  "C_budget": 321.20000000000005,
+  "B_budget": 321.20000000000005,
+  "W_cap": 840437.3147835498,
+  "alpha_eff": 0.95,
+  "gamma": 0.95,
+  "delta": 1.0,
+  "use_group_bounds": false
+}
