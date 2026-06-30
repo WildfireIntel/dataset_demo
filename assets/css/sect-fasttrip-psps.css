@@ -892,6 +892,202 @@ article.page:has(#sect-fasttrip-psps) .page__content {
   object-fit: contain;
 }
 
+/* ── TAB 3: Historical data — interactive map + summary chart ───────── */
+.sfps-historical-layer-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sfps-layer-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--sfps-border-2);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--sfps-muted);
+  background: var(--sfps-surface);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.sfps-layer-toggle:hover {
+  border-color: var(--sfps-blue);
+  color: var(--sfps-text);
+}
+
+.sfps-layer-toggle input[type="checkbox"] {
+  margin: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+  accent-color: var(--sfps-blue);
+  cursor: pointer;
+}
+
+.sfps-layer-toggle.is-active {
+  color: var(--sfps-text);
+  background: var(--sfps-bg);
+}
+
+.sfps-layer-toggle-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.sfps-historical-map-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: stretch;
+  margin-bottom: 1rem;
+}
+
+.sfps-historical-map-card {
+  background: var(--sfps-surface);
+  border: 1px solid var(--sfps-border);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: var(--sfps-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sfps-historical-chart-card {
+  background: var(--sfps-surface);
+  border: 1px solid var(--sfps-border);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: var(--sfps-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sfps-historical-map-header,
+.sfps-historical-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.sfps-historical-map-title,
+.sfps-historical-chart-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--sfps-blue);
+  letter-spacing: -0.015em;
+}
+
+.sfps-historical-map-sub {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--sfps-muted);
+  font-weight: 400;
+}
+
+.sfps-historical-map {
+  width: 100%;
+  height: 380px;
+  border-radius: 8px;
+  border: 1px solid var(--sfps-border);
+  overflow: hidden;
+  background: var(--sfps-bg);
+}
+
+/* Keep Leaflet UI chrome (zoom control, popups, attribution) visually
+   consistent with the rest of the site's light theme + font. */
+.sfps-historical-map .leaflet-popup-content-wrapper,
+.sfps-historical-map .leaflet-popup-tip {
+  background: var(--sfps-surface);
+  color: var(--sfps-text);
+}
+
+.sfps-historical-map .leaflet-popup-content {
+  font-family: var(--sfps-font);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 0.6rem 0.75rem;
+}
+
+.sfps-historical-map .leaflet-control-zoom a {
+  font-family: var(--sfps-font);
+  color: var(--sfps-text);
+}
+
+.sfps-historical-map-legend-dot {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  margin-right: 0.35rem;
+}
+
+.sfps-historical-cloud-placeholder {
+  margin-top: 0.85rem;
+  padding: 1.1rem;
+  border: 1px dashed var(--sfps-border-2);
+  border-radius: 8px;
+  background: var(--sfps-bg);
+  color: var(--sfps-subtle);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.sfps-historical-chart-toggle {
+  display: inline-flex;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.sfps-historical-chart-toggle .sfps-chart-toggle-btn {
+  margin-top: 0;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.sfps-historical-chart-toggle .sfps-chart-toggle-btn.is-active {
+  border-color: var(--sfps-blue);
+  color: var(--sfps-blue);
+  background: var(--sfps-blue-lt);
+}
+
+.sfps-historical-summary-chart {
+  width: 100%;
+  flex: 1 1 auto;
+  height: 380px;
+  min-height: 380px;
+  max-height: 380px;
+  overflow: hidden;
+}
+
+@media (max-width: 1400px) {
+  .sfps-historical-map-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .sfps-historical-map-header,
+  .sfps-historical-chart-header {
+    flex-direction: column;
+  }
+}
+
 /* ── TAB 4: Optimization results ───────────────────────────────────── */
 .sfps-plot {
   width: 100%;

@@ -9,6 +9,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
 
+<!-- Leaflet (map for the Historical Data tab) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
 <style>
   .page__inner-wrap { max-width: 3800px; width: 100%; }
 </style>
@@ -276,6 +280,38 @@
               <input id="historical-year" type="range" />
               <div id="historical-year-value" class="sfps-year-badge"></div>
             </div>
+            <div class="sfps-controls-section-label">Map layers</div>
+            <div id="historical-layer-toggles" class="sfps-historical-layer-toggles"></div>
+          </div>
+
+          <!-- ─────────────────────────────────────────────────────────
+               Interactive map + summary chart (real dataset overlay)
+               ───────────────────────────────────────────────────────── -->
+          <div class="sfps-historical-map-section">
+            <div class="sfps-historical-map-card">
+              <div class="sfps-historical-map-header">
+                <h3 class="sfps-historical-map-title">Wildfire Dataset Map</h3>
+                <span class="sfps-historical-map-sub">CPUC ignition events, EPSS/PSPS outage events, and PG&amp;E incident reports for the selected year</span>
+              </div>
+              <div id="historical-map" class="sfps-historical-map"></div>
+
+              <!-- TODO: cloud/weather GIF goes here -->
+              <div id="historical-cloud-gif" class="sfps-historical-cloud-placeholder">
+                <!-- TODO: cloud/weather GIF goes here -->
+                <span class="sfps-historical-cloud-placeholder-text">Day-by-day cloud / weather animation placeholder</span>
+              </div>
+            </div>
+
+            <div class="sfps-historical-chart-card">
+              <div class="sfps-historical-chart-header">
+                <h3 class="sfps-historical-chart-title">Event Counts by Dataset</h3>
+                <div class="sfps-historical-chart-toggle" id="historical-chart-toggle" role="group" aria-label="Chart type">
+                  <button type="button" class="sfps-button sfps-button--ghost sfps-chart-toggle-btn is-active" data-chart-type="bar">Bar</button>
+                  <button type="button" class="sfps-button sfps-button--ghost sfps-chart-toggle-btn" data-chart-type="donut">Donut</button>
+                </div>
+              </div>
+              <div id="historical-summary-chart" class="sfps-historical-summary-chart"></div>
+            </div>
           </div>
 
           <div class="sfps-historical-content">
@@ -377,6 +413,8 @@
 <link rel="stylesheet" href="./assets/css/sect-fasttrip-psps.css">
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  crossorigin=""></script>
 <script src="./assets/js/sect-fasttrip-psps.js"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>

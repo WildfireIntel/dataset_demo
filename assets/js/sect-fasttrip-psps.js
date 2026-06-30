@@ -27,6 +27,10 @@
   const historicalYearValue = document.getElementById("historical-year-value");
   const historicalPlotsRank = document.getElementById("historical-plots-rank");
   const historicalPlotsSummary = document.getElementById("historical-plots-summary");
+  const historicalLayerToggles = document.getElementById("historical-layer-toggles");
+  const historicalMapEl = document.getElementById("historical-map");
+  const historicalSummaryChartEl = document.getElementById("historical-summary-chart");
+  const historicalChartToggle = document.getElementById("historical-chart-toggle");
 
   const hyperparams = [
     "B_budget",
@@ -256,6 +260,305 @@
     }
   ];
 
+  // ═══════════════════════════════════════════════════════════════════
+  // Historical Data — interactive map + summary chart datasets.
+  //
+  // Each entry uses placeholder/sample data for now. To swap in a real
+  // dataset later, just set `dataUrl` to a CSV with `lat`, `lon`, and
+  // `year` columns (plus anything else you'd like in the popup) — that's
+  // the only change needed. When `dataUrl` is set, it takes priority over
+  // `sampleData` and is parsed with PapaParse.
+  // ═══════════════════════════════════════════════════════════════════
+  const HISTORICAL_DATASETS = {
+    cpuc: {
+      label: "CPUC Ignition Events",
+      chartShortLabel: "CPUC Ignitions",
+      color: "#c0440e", // var(--sfps-bonf)
+      dataUrl: null, // e.g. `${basePath}/assets/data/cpuc_ignitions.csv`
+      sampleData: [
+        { lat: 39.76, lon: -121.62, year: 2020, name: "Butte County ignition" },
+        { lat: 38.58, lon: -122.93, year: 2020, name: "Sonoma County ignition" },
+        { lat: 40.59, lon: -122.39, year: 2021, name: "Shasta County ignition" },
+        { lat: 37.87, lon: -122.27, year: 2021, name: "Alameda County ignition" },
+        { lat: 36.78, lon: -119.42, year: 2021, name: "Fresno County ignition" },
+        { lat: 39.16, lon: -121.34, year: 2022, name: "Yuba County ignition" },
+        { lat: 34.42, lon: -119.7,  year: 2022, name: "Santa Barbara County ignition" },
+        { lat: 38.9,  lon: -120.0,  year: 2022, name: "El Dorado County ignition" },
+        { lat: 40.43, lon: -123.82, year: 2023, name: "Humboldt County ignition" },
+        { lat: 37.3,  lon: -121.88, year: 2023, name: "Santa Clara County ignition" },
+        { lat: 38.0,  lon: -122.5,  year: 2023, name: "Marin County ignition" },
+        { lat: 39.5,  lon: -121.85, year: 2024, name: "Glenn County ignition" },
+        { lat: 35.6,  lon: -118.85, year: 2024, name: "Kern County ignition" },
+        { lat: 38.3,  lon: -121.0,  year: 2024, name: "Sacramento County ignition" }
+      ]
+    },
+    epssPsps: {
+      label: "EPSS / PSPS Outage Events",
+      chartShortLabel: "EPSS / PSPS",
+      color: "#1d6fa5", // var(--sfps-blue)
+      dataUrl: null, // e.g. `${basePath}/assets/data/epss_psps_outages.csv`
+      sampleData: [
+        { lat: 39.9,  lon: -121.0,  year: 2020, name: "Plumas circuit de-energized" },
+        { lat: 38.45, lon: -122.71, year: 2020, name: "Napa circuit fast-trip" },
+        { lat: 37.5,  lon: -119.65, year: 2021, name: "Mariposa circuit de-energized" },
+        { lat: 39.3,  lon: -121.6,  year: 2021, name: "Yuba circuit fast-trip" },
+        { lat: 34.2,  lon: -118.9,  year: 2021, name: "Ventura circuit de-energized" },
+        { lat: 38.7,  lon: -120.8,  year: 2022, name: "Amador circuit fast-trip" },
+        { lat: 40.1,  lon: -122.2,  year: 2022, name: "Tehama circuit de-energized" },
+        { lat: 36.9,  lon: -121.7,  year: 2022, name: "Monterey circuit fast-trip" },
+        { lat: 39.0,  lon: -120.9,  year: 2023, name: "Placer circuit de-energized" },
+        { lat: 37.0,  lon: -120.0,  year: 2023, name: "Madera circuit fast-trip" },
+        { lat: 38.2,  lon: -122.65, year: 2024, name: "Sonoma circuit de-energized" },
+        { lat: 35.9,  lon: -119.3,  year: 2024, name: "Tulare circuit fast-trip" },
+        { lat: 40.3,  lon: -121.4,  year: 2024, name: "Lassen circuit de-energized" }
+      ]
+    },
+    pgeIncidents: {
+      label: "PG&E Incident Reports",
+      chartShortLabel: "PG&E Incidents",
+      color: "#0a7c5c", // var(--sfps-ours)
+      dataUrl: null, // e.g. `${basePath}/assets/data/pge_incident_reports.csv`
+      sampleData: [
+        { lat: 39.4,  lon: -121.45, year: 2020, name: "Equipment-related incident" },
+        { lat: 38.0,  lon: -121.3,  year: 2020, name: "Vegetation contact incident" },
+        { lat: 37.95, lon: -122.55, year: 2021, name: "Conductor failure incident" },
+        { lat: 39.05, lon: -123.05, year: 2021, name: "Pole failure incident" },
+        { lat: 36.6,  lon: -121.9,  year: 2022, name: "Vegetation contact incident" },
+        { lat: 38.55, lon: -121.4,  year: 2022, name: "Equipment-related incident" },
+        { lat: 40.0,  lon: -122.85, year: 2023, name: "Conductor failure incident" },
+        { lat: 37.2,  lon: -122.3,  year: 2023, name: "Pole failure incident" },
+        { lat: 39.85, lon: -120.95, year: 2023, name: "Vegetation contact incident" },
+        { lat: 38.85, lon: -122.0,  year: 2024, name: "Equipment-related incident" },
+        { lat: 36.3,  lon: -119.85, year: 2024, name: "Conductor failure incident" }
+      ]
+    }
+  };
+
+  let historicalMapInstance = null;
+  let historicalLayerGroups = {};
+  let historicalDatasetRecords = {};
+  let historicalActiveLayers = new Set(Object.keys(HISTORICAL_DATASETS));
+  let historicalChartType = "bar";
+  let historicalMapChartInitialized = false;
+
+  const loadHistoricalDatasetRecords = async (key) => {
+    const config = HISTORICAL_DATASETS[key];
+    if (!config) return [];
+    if (!config.dataUrl) return config.sampleData || [];
+    try {
+      const response = await fetch(config.dataUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+      const rows = parseCsvText(text);
+      return rows
+        .map((row) => ({
+          lat: Number(row.lat),
+          lon: Number(row.lon),
+          year: Number(row.year),
+          name: row.name || row.description || config.label
+        }))
+        .filter((row) => Number.isFinite(row.lat) && Number.isFinite(row.lon) && Number.isFinite(row.year));
+    } catch (error) {
+      // Fall back to placeholder data if the real CSV isn't available yet.
+      return config.sampleData || [];
+    }
+  };
+
+  const buildHistoricalLayerToggles = () => {
+    if (!historicalLayerToggles) return;
+    historicalLayerToggles.innerHTML = "";
+    Object.entries(HISTORICAL_DATASETS).forEach(([key, config]) => {
+      const label = document.createElement("label");
+      label.className = "sfps-layer-toggle is-active";
+      label.dataset.layerKey = key;
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = true;
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          historicalActiveLayers.add(key);
+        } else {
+          historicalActiveLayers.delete(key);
+        }
+        label.classList.toggle("is-active", checkbox.checked);
+        renderHistoricalMapAndChart(getCurrentHistoricalYear());
+      });
+
+      const dot = document.createElement("span");
+      dot.className = "sfps-layer-toggle-dot";
+      dot.style.background = config.color;
+
+      const text = document.createElement("span");
+      text.textContent = config.label;
+
+      label.appendChild(checkbox);
+      label.appendChild(dot);
+      label.appendChild(text);
+      historicalLayerToggles.appendChild(label);
+    });
+  };
+
+  const initHistoricalMap = () => {
+    if (!historicalMapEl || typeof L === "undefined" || historicalMapInstance) return;
+    historicalMapInstance = L.map(historicalMapEl, {
+      scrollWheelZoom: false
+    }).setView([37.6, -120.8], 6);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 12
+    }).addTo(historicalMapInstance);
+
+    Object.keys(HISTORICAL_DATASETS).forEach((key) => {
+      historicalLayerGroups[key] = L.layerGroup().addTo(historicalMapInstance);
+    });
+  };
+
+  const getCurrentHistoricalYear = () => {
+    if (!historicalYearInput || !historicalYears.length) return historicalYears[0];
+    return historicalYears[Number(historicalYearInput.value)] ?? historicalYears[0];
+  };
+
+  const renderHistoricalChart = (countsByDataset, year) => {
+    if (!historicalSummaryChartEl || typeof Plotly === "undefined") return;
+    const entries = Object.entries(HISTORICAL_DATASETS).filter(([key]) => historicalActiveLayers.has(key));
+    const labels = entries.map(([, config]) => config.label);
+    const shortLabels = entries.map(([, config]) => config.chartShortLabel || config.label);
+    const colors = entries.map(([, config]) => config.color);
+    const values = entries.map(([key]) => countsByDataset[key] || 0);
+
+    const layout = {
+      font: { family: "Plus Jakarta Sans, -apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif", size: 12, color: "#1e293b" },
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent",
+      showlegend: historicalChartType === "donut"
+    };
+
+    let data;
+    if (historicalChartType === "donut") {
+      layout.margin = { t: 10, r: 110, b: 10, l: 10 };
+      layout.legend = {
+        orientation: "v",
+        yanchor: "middle",
+        y: 0.5,
+        x: 1.02,
+        xanchor: "left",
+        font: { size: 11 }
+      };
+      data = [{
+        type: "pie",
+        hole: 0.55,
+        labels,
+        values,
+        marker: { colors },
+        textinfo: "value",
+        hovertemplate: "%{label}: %{value} events<extra></extra>"
+      }];
+    } else {
+      layout.margin = { t: 10, r: 24, b: 36, l: 96 };
+      layout.xaxis = {
+        title: { text: "Event count", standoff: 8 },
+        gridcolor: "#e2e8f0",
+        zeroline: false,
+        automargin: true,
+        fixedrange: true
+      };
+      layout.yaxis = {
+        automargin: true,
+        tickfont: { size: 11 },
+        fixedrange: true
+      };
+      data = [{
+        type: "bar",
+        orientation: "h",
+        y: shortLabels,
+        x: values,
+        customdata: labels,
+        marker: { color: colors },
+        hovertemplate: "%{customdata}: %{x} events<extra></extra>"
+      }];
+    }
+
+    const chartHeight = Math.max(320, historicalSummaryChartEl.clientHeight || 380);
+    layout.height = chartHeight;
+    layout.autosize = false;
+
+    Plotly.react(historicalSummaryChartEl, data, layout, { displayModeBar: false, responsive: true });
+  };
+
+  const renderHistoricalMapAndChart = (year) => {
+    const countsByDataset = {};
+
+    Object.entries(HISTORICAL_DATASETS).forEach(([key, config]) => {
+      const records = historicalDatasetRecords[key] || [];
+      const yearRecords = records.filter((record) => record.year === year);
+      countsByDataset[key] = yearRecords.length;
+
+      if (!historicalMapInstance) return;
+
+      const group = historicalLayerGroups[key];
+      if (!group) return;
+      group.clearLayers();
+
+      if (!historicalActiveLayers.has(key)) return;
+
+      yearRecords.forEach((record) => {
+        const marker = L.circleMarker([record.lat, record.lon], {
+          radius: 6,
+          color: config.color,
+          fillColor: config.color,
+          fillOpacity: 0.75,
+          weight: 1.5
+        });
+        marker.bindPopup(
+          `<strong>${config.label}</strong><br/>${record.name || ""}<br/>${record.year}`
+        );
+        marker.addTo(group);
+      });
+    });
+
+    renderHistoricalChart(countsByDataset, year);
+  };
+
+  const initHistoricalMapAndChart = async () => {
+    if (!historicalMapEl || !historicalSummaryChartEl) return;
+    buildHistoricalLayerToggles();
+    initHistoricalMap();
+
+    const keys = Object.keys(HISTORICAL_DATASETS);
+    const results = await Promise.all(keys.map((key) => loadHistoricalDatasetRecords(key)));
+    keys.forEach((key, idx) => {
+      historicalDatasetRecords[key] = results[idx];
+    });
+
+    if (historicalChartToggle) {
+      historicalChartToggle.querySelectorAll(".sfps-chart-toggle-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          historicalChartType = button.dataset.chartType || "bar";
+          historicalChartToggle.querySelectorAll(".sfps-chart-toggle-btn").forEach((btn) => {
+            btn.classList.toggle("is-active", btn === button);
+          });
+          renderHistoricalMapAndChart(getCurrentHistoricalYear());
+        });
+      });
+    }
+
+    renderHistoricalMapAndChart(getCurrentHistoricalYear());
+  };
+
+  const ensureHistoricalMapAndChart = () => {
+    if (!historicalMapChartInitialized) {
+      historicalMapChartInitialized = true;
+      initHistoricalMapAndChart();
+      return;
+    }
+    if (historicalMapInstance) historicalMapInstance.invalidateSize();
+    if (historicalSummaryChartEl && typeof Plotly !== "undefined" && historicalSummaryChartEl.data) {
+      Plotly.Plots.resize(historicalSummaryChartEl);
+    }
+  };
+
   const setStatus = (el, message, isError = false) => {
     if (!el) return;
     const showErr = isError && !!message;
@@ -319,6 +622,7 @@
       const year = historicalYears[Number(historicalYearInput.value)] ?? historicalYears[0];
       historicalYearValue.textContent = String(year);
       renderHistoricalPlots(year);
+      renderHistoricalMapAndChart(year);
       updateSliderFill();
     };
 
@@ -381,6 +685,9 @@
         panel.classList.toggle("is-active", isActive);
         panel.toggleAttribute("hidden", !isActive);
       });
+      if (targetId === "sfps-tab-historical") {
+        ensureHistoricalMapAndChart();
+      }
     };
 
     tabButtons.forEach((button) => {
