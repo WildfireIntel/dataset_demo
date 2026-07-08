@@ -274,7 +274,7 @@
       label: "CPUC Ignition Events",
       chartShortLabel: "CPUC Ignitions",
       color: "#c0440e", // var(--sfps-bonf)
-      dataUrl: null, // e.g. `${basePath}/assets/data/cpuc_ignitions.csv`
+      dataUrl: `${basePath}/assets/data/cpuc_ignitions.csv`,
       sampleData: [
         { lat: 39.76, lon: -121.62, year: 2020, name: "Butte County ignition" },
         { lat: 38.58, lon: -122.93, year: 2020, name: "Sonoma County ignition" },
@@ -296,7 +296,7 @@
       label: "EPSS / PSPS Outage Events",
       chartShortLabel: "EPSS / PSPS",
       color: "#1d6fa5", // var(--sfps-blue)
-      dataUrl: null, // e.g. `${basePath}/assets/data/epss_psps_outages.csv`
+      dataUrl: `${basePath}/assets/data/epss_psps_outages.csv`,
       sampleData: [
         { lat: 39.9,  lon: -121.0,  year: 2020, name: "Plumas circuit de-energized" },
         { lat: 38.45, lon: -122.71, year: 2020, name: "Napa circuit fast-trip" },
@@ -311,25 +311,6 @@
         { lat: 38.2,  lon: -122.65, year: 2024, name: "Sonoma circuit de-energized" },
         { lat: 35.9,  lon: -119.3,  year: 2024, name: "Tulare circuit fast-trip" },
         { lat: 40.3,  lon: -121.4,  year: 2024, name: "Lassen circuit de-energized" }
-      ]
-    },
-    pgeIncidents: {
-      label: "PG&E Incident Reports",
-      chartShortLabel: "PG&E Incidents",
-      color: "#0a7c5c", // var(--sfps-ours)
-      dataUrl: null, // e.g. `${basePath}/assets/data/pge_incident_reports.csv`
-      sampleData: [
-        { lat: 39.4,  lon: -121.45, year: 2020, name: "Equipment-related incident" },
-        { lat: 38.0,  lon: -121.3,  year: 2020, name: "Vegetation contact incident" },
-        { lat: 37.95, lon: -122.55, year: 2021, name: "Conductor failure incident" },
-        { lat: 39.05, lon: -123.05, year: 2021, name: "Pole failure incident" },
-        { lat: 36.6,  lon: -121.9,  year: 2022, name: "Vegetation contact incident" },
-        { lat: 38.55, lon: -121.4,  year: 2022, name: "Equipment-related incident" },
-        { lat: 40.0,  lon: -122.85, year: 2023, name: "Conductor failure incident" },
-        { lat: 37.2,  lon: -122.3,  year: 2023, name: "Pole failure incident" },
-        { lat: 39.85, lon: -120.95, year: 2023, name: "Vegetation contact incident" },
-        { lat: 38.85, lon: -122.0,  year: 2024, name: "Equipment-related incident" },
-        { lat: 36.3,  lon: -119.85, year: 2024, name: "Conductor failure incident" }
       ]
     }
   };
@@ -399,6 +380,28 @@
     });
   };
 
+  const createHistoricalClusterGroup = (config) => {
+    if (typeof L.markerClusterGroup !== "function") {
+      return L.layerGroup();
+    }
+    return L.markerClusterGroup({
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      maxClusterRadius: 50,
+      iconCreateFunction(cluster) {
+        const count = cluster.getChildCount();
+        let sizeClass = " marker-cluster-small";
+        if (count >= 100) sizeClass = " marker-cluster-large";
+        else if (count >= 10) sizeClass = " marker-cluster-medium";
+        return L.divIcon({
+          html: `<div style="background-color:${config.color}"><span>${count}</span></div>`,
+          className: `marker-cluster${sizeClass}`,
+          iconSize: L.point(40, 40)
+        });
+      }
+    });
+  };
+
   const initHistoricalMap = () => {
     if (!historicalMapEl || typeof L === "undefined" || historicalMapInstance) return;
     historicalMapInstance = L.map(historicalMapEl, {
@@ -411,7 +414,8 @@
     }).addTo(historicalMapInstance);
 
     Object.keys(HISTORICAL_DATASETS).forEach((key) => {
-      historicalLayerGroups[key] = L.layerGroup().addTo(historicalMapInstance);
+      const config = HISTORICAL_DATASETS[key];
+      historicalLayerGroups[key] = createHistoricalClusterGroup(config).addTo(historicalMapInstance);
     });
   };
 
