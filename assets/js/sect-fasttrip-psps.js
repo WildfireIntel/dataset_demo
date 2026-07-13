@@ -13,6 +13,7 @@
 
   const historicalYearInput = document.getElementById("historical-year");
   const historicalYearValue = document.getElementById("historical-year-value");
+  const historicalYearPlay = document.getElementById("historical-year-play");
   const historicalCountyFilter = document.getElementById("historical-county-filter");
   const historicalUtilityFilter = document.getElementById("historical-utility-filter");
   const historicalPlotsRank = document.getElementById("historical-plots-rank");
@@ -21,6 +22,11 @@
   const historicalMapEl = document.getElementById("historical-map");
   const historicalSummaryChartEl = document.getElementById("historical-summary-chart");
   const historicalChartToggle = document.getElementById("historical-chart-toggle");
+  const weatherCanvas = document.getElementById("historical-weather-canvas");
+  const weatherPlayBtn = document.getElementById("historical-weather-play");
+  const weatherSpeedSelect = document.getElementById("historical-weather-speed");
+  const weatherScrub = document.getElementById("historical-weather-scrub");
+  const weatherDateEl = document.getElementById("historical-weather-date");
 
   const hyperparams = [
     "B_budget",
@@ -252,6 +258,41 @@
   let historicalMapChartInitialized = false;
   let historicalPspsGeoJson = null;
   let historicalPspsLayer = null;
+  let historicalYearPlayTimer = null;
+
+  const WEATHER_ANIM_BASE = `${basePath}/assets/data/weather_anim`;
+  const WEATHER_COLOR_STOPS = [
+    { v: 0, r: 13, g: 71, b: 110 },
+    { v: 80, r: 0, g: 150, b: 136 },
+    { v: 140, r: 255, g: 235, b: 59 },
+    { v: 200, r: 255, g: 152, b: 0 },
+    { v: 255, r: 139, g: 0, b: 0 }
+  ];
+  const WEATHER_GLOW_THRESHOLD = 200;
+  const WEATHER_DAY_DURATION_MS = 100;
+  const WEATHER_PAD_FRACTION = 0.04;
+  const weatherDateFormatter = new Intl.DateTimeFormat(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+
+  let weatherGridCells = null;
+  let weatherGridBounds = null;
+  let weatherYearCache = {};
+  let weatherAnimYear = null;
+  let weatherAnimData = null;
+  let weatherAnimDayT = 0;
+  let weatherAnimPlaying = false;
+  let weatherAnimRafId = null;
+  let weatherAnimLastFrameMs = null;
+  let weatherAnimSpeed = 1;
+  let weatherCellLayout = null;
+  let weatherAnimInitialized = false;
+  let weatherAnimLoading = false;
+  let weatherCanvasCtx = null;
+  let weatherResizeObserver = null;
+  let weatherAnimLoadToken = 0;
 
   const loadHistoricalDatasetRecords = async (key) => {
     const config = HISTORICAL_DATASETS[key];
@@ -714,6 +755,7 @@
     }
 
     renderHistoricalMapAndChart(getCurrentHistoricalYear());
+    initWeatherAnim();
   };
 
   const ensureHistoricalMapAndChart = () => {
@@ -725,6 +767,11 @@
     if (historicalMapInstance) historicalMapInstance.invalidateSize();
     if (historicalSummaryChartEl && typeof Plotly !== "undefined" && historicalSummaryChartEl.data) {
       Plotly.Plots.resize(historicalSummaryChartEl);
+    }
+    if (weatherAnimInitialized) {
+      resizeWeatherCanvas();
+      if (weatherAnimData && !weatherAnimLoading) drawWeatherFrame();
+      else if (weatherAnimLoading) drawWeatherLoadingState("Loading…");
     }
   };
 
@@ -771,6 +818,397 @@
     });
   };
 
+  const isHistoricalYearPlaying = () => historicalYearPlayTimer != null;
+
+  const stopHistoricalYearPlayback = () => {
+    if (historicalYearPlayTimer != null) {
+      clearInterval(historicalYearPlayTimer);
+      historicalYearPlayTimer = null;
+    }
+    if (historicalYearPlay) {
+      historicalYearPlay.textContent = "▶";
+      historicalYearPlay.setAttribute("aria-pressed", "false");
+      historicalYearPlay.setAttribute("aria-label", "Play year animation");
+    }
+  };
+
+  const advanceHistoricalYearStep = () => {
+    if (!historicalYearInput) return;
+    const max = Number(historicalYearInput.max) || 0;
+    const current = Number(historicalYearInput.value) || 0;
+    const next = max > 0 ? (current + 1) % (max + 1) : 0;
+    historicalYearInput.value = String(next);
+    historicalYearInput.dispatchEvent(new Event("input", { bubbles: true }));
+  };
+
+  const startHistoricalYearPlayback = () => {
+    if (historicalYearPlayTimer != null) return;
+    if (historicalYearPlay) {
+      historicalYearPlay.textContent = "⏸";
+      historicalYearPlay.setAttribute("aria-pressed", "true");
+      historicalYearPlay.setAttribute("aria-label", "Pause year animation");
+    }
+    historicalYearPlayTimer = setInterval(advanceHistoricalYearStep, 1500);
+  };
+
+  const weatherLerp = (a, b, t) => a + (b - a) * t;
+
+  const dangerToRgb = (value) => {
+    const v = Math.max(0, Math.min(255, value));
+    for (let i = 0; i < WEATHER_COLOR_STOPS.length - 1; i += 1) {
+      const left = WEATHER_COLOR_STOPS[i];
+      const right = WEATHER_COLOR_STOPS[i + 1];
+      if (v <= right.v) {
+        const span = right.v - left.v || 1;
+        const t = (v - left.v) / span;
+        return {
+          r: Math.round(weatherLerp(left.r, right.r, t)),
+          g: Math.round(weatherLerp(left.g, right.g, t)),
+          b: Math.round(weatherLerp(left.b, right.b, t))
+        };
+      }
+    }
+    const last = WEATHER_COLOR_STOPS[WEATHER_COLOR_STOPS.length - 1];
+    return { r: last.r, g: last.g, b: last.b };
+  };
+
+  const computeWeatherGridBounds = (cells) => {
+    let latMin = Infinity;
+    let latMax = -Infinity;
+    let lonMin = Infinity;
+    let lonMax = -Infinity;
+    cells.forEach((cell) => {
+      latMin = Math.min(latMin, cell.lat);
+      latMax = Math.max(latMax, cell.lat);
+      lonMin = Math.min(lonMin, cell.lon);
+      lonMax = Math.max(lonMax, cell.lon);
+    });
+    return { latMin, latMax, lonMin, lonMax };
+  };
+
+  const resizeWeatherCanvas = () => {
+    if (!weatherCanvas) return;
+    const wrap = weatherCanvas.parentElement;
+    const cssWidth = wrap ? wrap.clientWidth : weatherCanvas.clientWidth;
+    if (!cssWidth) return;
+
+    const aspect = 10 / 9;
+    const cssHeight = cssWidth / aspect;
+    const dpr = window.devicePixelRatio || 1;
+
+    weatherCanvas.width = Math.max(1, Math.round(cssWidth * dpr));
+    weatherCanvas.height = Math.max(1, Math.round(cssHeight * dpr));
+    weatherCanvas.style.height = `${cssHeight}px`;
+
+    weatherCanvasCtx = weatherCanvas.getContext("2d");
+    if (weatherCanvasCtx) {
+      weatherCanvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    if (weatherGridCells && weatherGridBounds) {
+      weatherCellLayout = computeWeatherCellLayout();
+    }
+  };
+
+  const computeWeatherCellLayout = () => {
+    if (!weatherCanvas || !weatherGridCells || !weatherGridBounds) return null;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = weatherCanvas.width / dpr;
+    const h = weatherCanvas.height / dpr;
+    const pad = Math.min(w, h) * WEATHER_PAD_FRACTION;
+    const plotW = Math.max(1, w - pad * 2);
+    const plotH = Math.max(1, h - pad * 2);
+    const { latMin, latMax, lonMin, lonMax } = weatherGridBounds;
+    const latSpan = latMax - latMin || 1;
+    const lonSpan = lonMax - lonMin || 1;
+
+    const cellLatPx = (0.24 / latSpan) * plotH;
+    const cellLonPx = (0.24 / lonSpan) * plotW;
+    const cellSize = Math.max(2.5, Math.min(cellLatPx, cellLonPx) * 0.92);
+
+    const positions = weatherGridCells.map((cell) => ({
+      x: pad + ((cell.lon - lonMin) / lonSpan) * plotW,
+      y: pad + ((latMax - cell.lat) / latSpan) * plotH
+    }));
+
+    return { positions, cellSize, plotW, plotH, pad, w, h };
+  };
+
+  const drawWeatherRoundRect = (ctx, x, y, size, radius) => {
+    const r = Math.min(radius, size / 2);
+    ctx.beginPath();
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(x, y, size, size, r);
+    } else {
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + size - r, y);
+      ctx.quadraticCurveTo(x + size, y, x + size, y + r);
+      ctx.lineTo(x + size, y + size - r);
+      ctx.quadraticCurveTo(x + size, y + size, x + size - r, y + size);
+      ctx.lineTo(x + r, y + size);
+      ctx.quadraticCurveTo(x, y + size, x, y + size - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+  };
+
+  const formatWeatherDate = (dateStr) => {
+    if (!dateStr) return "—";
+    const parts = dateStr.split("-").map(Number);
+    if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return dateStr;
+    const [year, month, day] = parts;
+    return weatherDateFormatter.format(new Date(year, month - 1, day));
+  };
+
+  const updateWeatherAnimUI = () => {
+    if (!weatherAnimData) return;
+    const nDays = weatherAnimData.dates.length;
+    const dayIndex = Math.floor(weatherAnimDayT) % nDays;
+    const frac = weatherAnimDayT - Math.floor(weatherAnimDayT);
+    const displayIndex = frac >= 0.5 ? (dayIndex + 1) % nDays : dayIndex;
+
+    if (weatherScrub) {
+      weatherScrub.max = String(Math.max(0, nDays - 1));
+      weatherScrub.value = String(displayIndex);
+    }
+    if (weatherDateEl) {
+      weatherDateEl.textContent = formatWeatherDate(weatherAnimData.dates[displayIndex]);
+    }
+  };
+
+  const drawWeatherLoadingState = (message = "Loading…") => {
+    if (!weatherCanvasCtx || !weatherCellLayout) return;
+    const { w, h } = weatherCellLayout;
+    weatherCanvasCtx.save();
+    weatherCanvasCtx.fillStyle = "#0a1628";
+    weatherCanvasCtx.fillRect(0, 0, w, h);
+    weatherCanvasCtx.fillStyle = "rgba(255, 255, 255, 0.72)";
+    weatherCanvasCtx.font = "600 0.95rem system-ui, sans-serif";
+    weatherCanvasCtx.textAlign = "center";
+    weatherCanvasCtx.textBaseline = "middle";
+    weatherCanvasCtx.fillText(message, w / 2, h / 2);
+    weatherCanvasCtx.restore();
+    if (weatherDateEl) weatherDateEl.textContent = message;
+  };
+
+  const drawWeatherFrame = () => {
+    if (!weatherCanvasCtx || !weatherCellLayout || !weatherAnimData) return;
+
+    const { positions, cellSize, w, h } = weatherCellLayout;
+    const nDays = weatherAnimData.dates.length;
+    if (!nDays) return;
+
+    const day0 = Math.floor(weatherAnimDayT) % nDays;
+    const day1 = (day0 + 1) % nDays;
+    const frac = weatherAnimDayT - Math.floor(weatherAnimDayT);
+    const values0 = weatherAnimData.values[day0];
+    const values1 = weatherAnimData.values[day1];
+    const half = cellSize / 2;
+    const radius = Math.max(1, cellSize * 0.18);
+    const ctx = weatherCanvasCtx;
+
+    ctx.save();
+    ctx.fillStyle = "#0a1628";
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.save();
+    ctx.globalAlpha = 0.42;
+    ctx.shadowColor = "rgba(255, 72, 0, 0.75)";
+    ctx.shadowBlur = cellSize * 1.35;
+    for (let i = 0; i < positions.length; i += 1) {
+      const v0 = values0[i] ?? 0;
+      const v1 = values1[i] ?? 0;
+      const danger = weatherLerp(v0, v1, frac);
+      if (danger <= WEATHER_GLOW_THRESHOLD) continue;
+      const { x, y } = positions[i];
+      const rgb = dangerToRgb(danger);
+      ctx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      drawWeatherRoundRect(ctx, x - half, y - half, cellSize, radius);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    for (let i = 0; i < positions.length; i += 1) {
+      const v0 = values0[i] ?? 0;
+      const v1 = values1[i] ?? 0;
+      const danger = weatherLerp(v0, v1, frac);
+      const { x, y } = positions[i];
+      const rgb = dangerToRgb(danger);
+      ctx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      drawWeatherRoundRect(ctx, x - half, y - half, cellSize, radius);
+      ctx.fill();
+    }
+
+    ctx.restore();
+    updateWeatherAnimUI();
+  };
+
+  const tickWeatherAnim = (now) => {
+    if (!weatherAnimPlaying) return;
+    if (weatherAnimLastFrameMs == null) weatherAnimLastFrameMs = now;
+    const elapsed = now - weatherAnimLastFrameMs;
+    weatherAnimLastFrameMs = now;
+
+    if (weatherAnimData && !weatherAnimLoading) {
+      const nDays = weatherAnimData.dates.length;
+      if (nDays > 0) {
+        weatherAnimDayT += (elapsed / WEATHER_DAY_DURATION_MS) * weatherAnimSpeed;
+        while (weatherAnimDayT >= nDays) weatherAnimDayT -= nDays;
+        drawWeatherFrame();
+      }
+    }
+
+    weatherAnimRafId = requestAnimationFrame(tickWeatherAnim);
+  };
+
+  const pauseWeatherAnim = () => {
+    weatherAnimPlaying = false;
+    weatherAnimLastFrameMs = null;
+    if (weatherAnimRafId != null) {
+      cancelAnimationFrame(weatherAnimRafId);
+      weatherAnimRafId = null;
+    }
+    if (weatherPlayBtn) {
+      weatherPlayBtn.textContent = "▶";
+      weatherPlayBtn.setAttribute("aria-pressed", "false");
+      weatherPlayBtn.setAttribute("aria-label", "Play fire-weather animation");
+    }
+  };
+
+  const startWeatherAnim = () => {
+    if (!weatherAnimData || weatherAnimLoading) return;
+    if (weatherAnimPlaying) return;
+    weatherAnimPlaying = true;
+    weatherAnimLastFrameMs = null;
+    if (weatherPlayBtn) {
+      weatherPlayBtn.textContent = "⏸";
+      weatherPlayBtn.setAttribute("aria-pressed", "true");
+      weatherPlayBtn.setAttribute("aria-label", "Pause fire-weather animation");
+    }
+    weatherAnimRafId = requestAnimationFrame(tickWeatherAnim);
+  };
+
+  const loadWeatherGrid = async () => {
+    if (weatherGridCells) return weatherGridCells;
+    const response = await fetch(`${WEATHER_ANIM_BASE}/grid_cells.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    weatherGridCells = await response.json();
+    weatherGridBounds = computeWeatherGridBounds(weatherGridCells);
+    resizeWeatherCanvas();
+    return weatherGridCells;
+  };
+
+  const loadWeatherYearData = async (year) => {
+    if (weatherYearCache[year]) return weatherYearCache[year];
+    const response = await fetch(`${WEATHER_ANIM_BASE}/weather_anim_${year}.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    weatherYearCache[year] = data;
+    return data;
+  };
+
+  const setWeatherAnimYear = async (year) => {
+    if (!weatherCanvas) return;
+    const loadToken = ++weatherAnimLoadToken;
+    pauseWeatherAnim();
+    weatherAnimYear = year;
+    weatherAnimDayT = 0;
+    weatherAnimData = null;
+    weatherAnimLoading = true;
+
+    if (!weatherGridCells) {
+      try {
+        await loadWeatherGrid();
+      } catch (error) {
+        if (loadToken !== weatherAnimLoadToken) return;
+        drawWeatherLoadingState("Grid unavailable");
+        weatherAnimLoading = false;
+        return;
+      }
+    }
+
+    if (loadToken !== weatherAnimLoadToken) return;
+    drawWeatherLoadingState("Loading…");
+
+    try {
+      const data = await loadWeatherYearData(year);
+      if (loadToken !== weatherAnimLoadToken) return;
+      weatherAnimData = data;
+      weatherAnimLoading = false;
+      if (weatherScrub) {
+        weatherScrub.max = String(Math.max(0, data.dates.length - 1));
+        weatherScrub.value = "0";
+      }
+      drawWeatherFrame();
+    } catch (error) {
+      if (loadToken !== weatherAnimLoadToken) return;
+      weatherAnimLoading = false;
+      drawWeatherLoadingState("Weather data unavailable");
+    }
+  };
+
+  const initWeatherAnim = async () => {
+    if (!weatherCanvas) return;
+    if (!weatherAnimInitialized) {
+      weatherAnimInitialized = true;
+      resizeWeatherCanvas();
+
+      if (weatherPlayBtn) {
+        weatherPlayBtn.addEventListener("click", () => {
+          if (weatherAnimPlaying) pauseWeatherAnim();
+          else startWeatherAnim();
+        });
+      }
+
+      if (weatherSpeedSelect) {
+        weatherAnimSpeed = Number(weatherSpeedSelect.value) || 1;
+        weatherSpeedSelect.addEventListener("change", () => {
+          weatherAnimSpeed = Number(weatherSpeedSelect.value) || 1;
+        });
+      }
+
+      if (weatherScrub) {
+        weatherScrub.addEventListener("input", () => {
+          pauseWeatherAnim();
+          if (!weatherAnimData) return;
+          const day = Number(weatherScrub.value) || 0;
+          weatherAnimDayT = day;
+          drawWeatherFrame();
+        });
+      }
+
+      const wrap = weatherCanvas.parentElement;
+      if (wrap && typeof ResizeObserver !== "undefined") {
+        weatherResizeObserver = new ResizeObserver(() => {
+          resizeWeatherCanvas();
+          if (weatherAnimData && !weatherAnimLoading) drawWeatherFrame();
+          else if (weatherAnimLoading) drawWeatherLoadingState("Loading…");
+        });
+        weatherResizeObserver.observe(wrap);
+      } else {
+        window.addEventListener("resize", () => {
+          resizeWeatherCanvas();
+          if (weatherAnimData && !weatherAnimLoading) drawWeatherFrame();
+        });
+      }
+    } else {
+      resizeWeatherCanvas();
+    }
+
+    try {
+      await loadWeatherGrid();
+      if (weatherAnimYear !== getCurrentHistoricalYear() || !weatherAnimData) {
+        await setWeatherAnimYear(getCurrentHistoricalYear());
+      } else {
+        drawWeatherFrame();
+      }
+    } catch (error) {
+      drawWeatherLoadingState("Weather animation unavailable");
+    }
+  };
+
   const initHistorical = () => {
     if (!historicalYearInput || !historicalYearValue || !historicalPlotsRank) return;
     if (!historicalYears.length) return;
@@ -792,11 +1230,30 @@
       historicalYearValue.textContent = String(year);
       renderHistoricalPlots(year);
       renderHistoricalMapAndChart(year);
+      setWeatherAnimYear(year);
       updateSliderFill();
     };
 
-    historicalYearInput.addEventListener("input", updateYear);
-    historicalYearInput.addEventListener("change", updateYear);
+    const handleYearInput = (event) => {
+      if (event.isTrusted && isHistoricalYearPlaying()) {
+        stopHistoricalYearPlayback();
+      }
+      updateYear();
+    };
+
+    historicalYearInput.addEventListener("input", handleYearInput);
+    historicalYearInput.addEventListener("change", handleYearInput);
+
+    if (historicalYearPlay) {
+      historicalYearPlay.addEventListener("click", () => {
+        if (isHistoricalYearPlaying()) {
+          stopHistoricalYearPlayback();
+        } else {
+          startHistoricalYearPlayback();
+        }
+      });
+    }
+
     updateYear();
   };
 
@@ -840,6 +1297,10 @@
         panel.classList.toggle("is-active", isActive);
         panel.toggleAttribute("hidden", !isActive);
       });
+      if (targetId !== "sfps-tab-historical") {
+        stopHistoricalYearPlayback();
+        pauseWeatherAnim();
+      }
       if (targetId === "sfps-tab-historical") {
         ensureHistoricalMapAndChart();
       }
