@@ -5,18 +5,6 @@
   const basePath = root.dataset.basePath || "";
   const manifestUrl = `${basePath}/assets/website_plots/manifest.json`;
 
-  const xAxisSelect = document.getElementById("x-axis");
-  const yAxisLeftSelect = document.getElementById("y-axis-left");
-  const yAxisRightSelect = document.getElementById("y-axis-right");
-  const methodLeftSelect = document.getElementById("method-left");
-  const methodRightSelect = document.getElementById("method-right");
-  const filterControls = document.getElementById("filter-controls");
-  const trendPlotOpt = document.getElementById("trend-plot-opt");
-  const trendPlotTrue = document.getElementById("trend-plot-true");
-  const plotTitleLeft = document.getElementById("plot-title-left");
-  const plotTitleRight = document.getElementById("plot-title-right");
-  const resetPart1Button = document.getElementById("reset-part1");
-
   const imageStatus = document.getElementById("image-status");
   const imageParams = document.getElementById("image-params");
   const decisionImage = document.getElementById("decision-image");
@@ -25,12 +13,20 @@
 
   const historicalYearInput = document.getElementById("historical-year");
   const historicalYearValue = document.getElementById("historical-year-value");
+  const historicalYearPlay = document.getElementById("historical-year-play");
+  const historicalCountyFilter = document.getElementById("historical-county-filter");
+  const historicalUtilityFilter = document.getElementById("historical-utility-filter");
   const historicalPlotsRank = document.getElementById("historical-plots-rank");
   const historicalPlotsSummary = document.getElementById("historical-plots-summary");
   const historicalLayerToggles = document.getElementById("historical-layer-toggles");
   const historicalMapEl = document.getElementById("historical-map");
   const historicalSummaryChartEl = document.getElementById("historical-summary-chart");
   const historicalChartToggle = document.getElementById("historical-chart-toggle");
+  const weatherCanvas = document.getElementById("historical-weather-canvas");
+  const weatherPlayBtn = document.getElementById("historical-weather-play");
+  const weatherSpeedSelect = document.getElementById("historical-weather-speed");
+  const weatherScrub = document.getElementById("historical-weather-scrub");
+  const weatherDateEl = document.getElementById("historical-weather-date");
 
   const hyperparams = [
     "B_budget",
@@ -124,83 +120,7 @@
     });
   };
 
-  const yMetricOptions = [
-    { key: "opt_cost", label: "Worst Case Cost", type: "direct" },
-    {
-      key: "true_cost",
-      label: "Evaluation cost (×10⁶)",
-      type: "direct",
-      /** CSV values are absolute cost; plot uses units of 10⁶. */
-      valueScale: 1e-6
-    },
-    { key: "x_size", label: "Sect. circuits", type: "direct" },
-    { key: "y_size", label: "Fast-trip config. circuits", type: "direct" },
-    { key: "z_star_size", label: "PSPS enacted circuits", type: "direct" },
-    { key: "population_psps_actual", label: "Population affected by PSPS (actual)", type: "direct" },
-    { key: "population_fast_trip", label: "Population affected by fast-trip", type: "direct" },
-    { key: "population_psps", label: "Population affected by PSPS (planned)", type: "direct" },
-    {
-      key: "x_size_budget_pct",
-      label: "Pct of sect. budget usage",
-      type: "ratio",
-      numerator: "x_size",
-      denominator: "C_budget"
-    },
-    {
-      key: "y_size_budget_pct",
-      label: "Pct of fast-trip budget usage",
-      type: "ratio",
-      numerator: "y_size",
-      denominator: "B_budget"
-    },
-    {
-      key: "psps_reliability_pct",
-      label: "Pct of PSPS impact on reliability constraint",
-      type: "ratio",
-      numerator: "population_psps_actual",
-      denominator: "W_cap"
-    },
-    {
-      key: "fast_trip_reliability_pct",
-      label: "Pct of fast-trip impact on reliability constraint",
-      type: "ratio",
-      numerator: "population_fast_trip",
-      denominator: "W_cap"
-    },
-    {
-      key: "x_size_total_pct",
-      label: "Pct of circuits sectionalized",
-      type: "ratio",
-      numerator: "x_size",
-      denominator: "808"
-    },
-    {
-      key: "y_size_total_pct",
-      label: "Pct of circuits with fast-trip",
-      type: "ratio",
-      numerator: "y_size",
-      denominator: "808"
-    },
-    {
-      key: "prevented_fast_trip_pct",
-      label: "Pct of ignitions prevented by fast-trip",
-      type: "ratio",
-      numerator: "prevented_by_fast_trip_y_total",
-      denominator: "ignitions"
-    },
-    {
-      key: "prevented_psps_pct",
-      label: "Pct of ignitions prevented by PSPS",
-      type: "ratio",
-      numerator: "prevented_by_psps_z_total",
-      denominator: "ignitions"
-    }
-  ];
-
   let dataset = [];
-  let columns = [];
-  let numericColumns = [];
-  let availableParams = [];
   let defaultCsvFile = "";
   let usingDefaultCsv = false;
   let imageMeta = [];
@@ -212,17 +132,6 @@
   };
   const userSelected = new Set();
 
-  const hiddenParamsForDefault = new Set([
-    "B_budget",
-    "W_cap",
-    "C_budget",
-    "ignitions"
-  ]);
-
-  const hiddenParamsForControls = new Set(["alpha"]);
-
-  const allowedMhtMethods = new Set(["Operational_MaxRank"]);
-
   const imageBasePath = `${basePath}/assets/website_plots/`;
   const fixedImageParams = {
     alpha: "0.1",
@@ -231,7 +140,7 @@
   };
   const historicalBasePath = `${basePath}/assets/website_plots/historical plots/`;
 
-  const historicalYears = [2020, 2021, 2022, 2023, 2024];
+  const historicalYears = [2020, 2021, 2022, 2023, 2024, 2025];
   const historicalPlotDefinitions = [
     {
       key: "ignitions_population_map",
@@ -315,12 +224,75 @@
     }
   };
 
+  // PSPS event polygons (GeoJSON) — separate from point datasets so they
+  // are not clustered and are not counted in the Event Counts chart.
+  const PSPS_EVENTS_LAYER = {
+    key: "pspsEvents",
+    label: "PSPS Event Areas",
+    color: "#7c3aed", // var(--sfps-mr)
+    dataUrl: `${basePath}/assets/data/psps_events.geojson`,
+    style: {
+      color: "#7c3aed",
+      weight: 1.5,
+      opacity: 0.9,
+      fillColor: "#7c3aed",
+      fillOpacity: 0.25
+    },
+    highlightStyle: {
+      color: "#5b21b6",
+      weight: 2.5,
+      opacity: 1,
+      fillColor: "#7c3aed",
+      fillOpacity: 0.45
+    }
+  };
+
   let historicalMapInstance = null;
   let historicalLayerGroups = {};
   let historicalDatasetRecords = {};
-  let historicalActiveLayers = new Set(Object.keys(HISTORICAL_DATASETS));
+  let historicalActiveLayers = new Set([
+    ...Object.keys(HISTORICAL_DATASETS),
+    PSPS_EVENTS_LAYER.key
+  ]);
   let historicalChartType = "bar";
   let historicalMapChartInitialized = false;
+  let historicalPspsGeoJson = null;
+  let historicalPspsLayer = null;
+  let historicalYearPlayTimer = null;
+
+  const WEATHER_ANIM_BASE = `${basePath}/assets/data/weather_anim`;
+  const WEATHER_COLOR_STOPS = [
+    { v: 0, r: 13, g: 71, b: 110 },
+    { v: 80, r: 0, g: 150, b: 136 },
+    { v: 140, r: 255, g: 235, b: 59 },
+    { v: 200, r: 255, g: 152, b: 0 },
+    { v: 255, r: 139, g: 0, b: 0 }
+  ];
+  const WEATHER_GLOW_THRESHOLD = 200;
+  const WEATHER_DAY_DURATION_MS = 100;
+  const WEATHER_PAD_FRACTION = 0.04;
+  const weatherDateFormatter = new Intl.DateTimeFormat(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+
+  let weatherGridCells = null;
+  let weatherGridBounds = null;
+  let weatherYearCache = {};
+  let weatherAnimYear = null;
+  let weatherAnimData = null;
+  let weatherAnimDayT = 0;
+  let weatherAnimPlaying = false;
+  let weatherAnimRafId = null;
+  let weatherAnimLastFrameMs = null;
+  let weatherAnimSpeed = 1;
+  let weatherCellLayout = null;
+  let weatherAnimInitialized = false;
+  let weatherAnimLoading = false;
+  let weatherCanvasCtx = null;
+  let weatherResizeObserver = null;
+  let weatherAnimLoadToken = 0;
 
   const loadHistoricalDatasetRecords = async (key) => {
     const config = HISTORICAL_DATASETS[key];
@@ -333,6 +305,7 @@
       const rows = parseCsvText(text);
       return rows
         .map((row) => ({
+          ...row,
           lat: Number(row.lat),
           lon: Number(row.lon),
           year: Number(row.year),
@@ -345,39 +318,149 @@
     }
   };
 
+  const loadHistoricalPspsEvents = async () => {
+    try {
+      const response = await fetch(PSPS_EVENTS_LAYER.dataUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      historicalPspsGeoJson = await response.json();
+    } catch (error) {
+      historicalPspsGeoJson = { type: "FeatureCollection", features: [] };
+    }
+  };
+
+  const formatPspsPopupValue = (value) => {
+    if (value === undefined || value === null || value === "") return "—";
+    return String(value);
+  };
+
+  const buildHistoricalPopupTableHtml = (title, color, rows) => {
+    const body = rows
+      .map(
+        ([label, value]) =>
+          `<tr><th style="text-align:left;padding:0.15rem 0.5rem 0.15rem 0;color:#64748b;font-weight:600;white-space:nowrap;">${label}</th><td style="padding:0.15rem 0;">${value}</td></tr>`
+      )
+      .join("");
+    return `<div style="font-family:Plus Jakarta Sans,-apple-system,BlinkMacSystemFont,Segoe UI,system-ui,sans-serif;font-size:0.8rem;line-height:1.4;"><strong style="color:${color};">${title}</strong><table style="margin-top:0.4rem;border-collapse:collapse;">${body}</table></div>`;
+  };
+
+  const HISTORICAL_POINT_CRITICAL_COUNT_FIELDS = new Set([
+    "medical_baseline",
+    "life_support",
+    "schools",
+    "hospitals"
+  ]);
+
+  const HISTORICAL_POINT_NUMERIC_FIELDS = new Set([
+    "customer_minutes",
+    "restoration_min",
+    ...HISTORICAL_POINT_CRITICAL_COUNT_FIELDS
+  ]);
+
+  const isHistoricalPointPopupValueEmpty = (fieldKey, value) => {
+    if (value === undefined || value === null || value === "") return true;
+    if (HISTORICAL_POINT_CRITICAL_COUNT_FIELDS.has(fieldKey)) {
+      const num = Number(value);
+      if (Number.isFinite(num) && num === 0) return true;
+    }
+    return false;
+  };
+
+  const formatHistoricalPointPopupValue = (fieldKey, value) => {
+    if (HISTORICAL_POINT_NUMERIC_FIELDS.has(fieldKey)) {
+      const num = Number(value);
+      if (Number.isFinite(num)) return num.toLocaleString();
+    }
+    return String(value);
+  };
+
+  const buildHistoricalPointPopupHtml = (key, config, record) => {
+    let rowDefs;
+    if (key === "cpuc") {
+      rowDefs = [
+        ["Date", "date", record.date],
+        ["Time", "time", record.time],
+        ["Coordinates", "_coords", `${record.lat.toFixed(4)}, ${record.lon.toFixed(4)}`]
+      ];
+    } else if (key === "epssPsps") {
+      rowDefs = [
+        ["Circuit", "circuit", record.circuit],
+        ["County", "county", record.county],
+        ["Division", "division", record.division],
+        ["Cause", "cause", record.cause],
+        ["Outage Type", "outage_type", record.outage_type],
+        ["Customer Minutes", "customer_minutes", record.customer_minutes],
+        ["Restoration (min)", "restoration_min", record.restoration_min],
+        ["Medical Baseline", "medical_baseline", record.medical_baseline],
+        ["Life Support", "life_support", record.life_support],
+        ["Schools", "schools", record.schools],
+        ["Hospitals", "hospitals", record.hospitals]
+      ];
+    } else {
+      rowDefs = [];
+    }
+
+    const rows = rowDefs
+      .filter(([, fieldKey, value]) => !isHistoricalPointPopupValueEmpty(fieldKey, value))
+      .map(([label, fieldKey, value]) => [
+        label,
+        fieldKey === "_coords" ? value : formatHistoricalPointPopupValue(fieldKey, value)
+      ]);
+
+    return buildHistoricalPopupTableHtml(config.label, config.color, rows);
+  };
+
+  const buildPspsPopupHtml = (properties) => {
+    const p = properties || {};
+    const rows = [
+      ["Event Name", formatPspsPopupValue(p.EventName)],
+      ["First Date of POC", formatPspsPopupValue(p.FirstDateofPOC)],
+      ["IOU", formatPspsPopupValue(p.IOU)],
+      ["De-energization Start Date", formatPspsPopupValue(p.DeEnergizationStartDate)],
+      ["Full Restoration Date", formatPspsPopupValue(p.FullRestorationDate)],
+      ["Customers De-energized", formatPspsPopupValue(p.CustomerDeEnergized)]
+    ];
+    return buildHistoricalPopupTableHtml(PSPS_EVENTS_LAYER.label, "#7c3aed", rows);
+  };
+
+  const appendHistoricalLayerToggle = (key, config) => {
+    if (!historicalLayerToggles) return;
+    const label = document.createElement("label");
+    label.className = "sfps-layer-toggle is-active";
+    label.dataset.layerKey = key;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = true;
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        historicalActiveLayers.add(key);
+      } else {
+        historicalActiveLayers.delete(key);
+      }
+      label.classList.toggle("is-active", checkbox.checked);
+      renderHistoricalMapAndChart(getCurrentHistoricalYear());
+    });
+
+    const dot = document.createElement("span");
+    dot.className = "sfps-layer-toggle-dot";
+    dot.style.background = config.color;
+
+    const text = document.createElement("span");
+    text.textContent = config.label;
+
+    label.appendChild(checkbox);
+    label.appendChild(dot);
+    label.appendChild(text);
+    historicalLayerToggles.appendChild(label);
+  };
+
   const buildHistoricalLayerToggles = () => {
     if (!historicalLayerToggles) return;
     historicalLayerToggles.innerHTML = "";
     Object.entries(HISTORICAL_DATASETS).forEach(([key, config]) => {
-      const label = document.createElement("label");
-      label.className = "sfps-layer-toggle is-active";
-      label.dataset.layerKey = key;
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = true;
-      checkbox.addEventListener("change", () => {
-        if (checkbox.checked) {
-          historicalActiveLayers.add(key);
-        } else {
-          historicalActiveLayers.delete(key);
-        }
-        label.classList.toggle("is-active", checkbox.checked);
-        renderHistoricalMapAndChart(getCurrentHistoricalYear());
-      });
-
-      const dot = document.createElement("span");
-      dot.className = "sfps-layer-toggle-dot";
-      dot.style.background = config.color;
-
-      const text = document.createElement("span");
-      text.textContent = config.label;
-
-      label.appendChild(checkbox);
-      label.appendChild(dot);
-      label.appendChild(text);
-      historicalLayerToggles.appendChild(label);
+      appendHistoricalLayerToggle(key, config);
     });
+    appendHistoricalLayerToggle(PSPS_EVENTS_LAYER.key, PSPS_EVENTS_LAYER);
   };
 
   const createHistoricalClusterGroup = (config) => {
@@ -413,6 +496,24 @@
       maxZoom: 12
     }).addTo(historicalMapInstance);
 
+    // Polygons first so they sit beneath point markers / clusters.
+    historicalPspsLayer = L.geoJSON(null, {
+      style: () => PSPS_EVENTS_LAYER.style,
+      onEachFeature(feature, layer) {
+        const properties = feature.properties || {};
+        layer.bindPopup(buildPspsPopupHtml(properties), { maxWidth: 320 });
+        layer.on({
+          mouseover(e) {
+            e.target.setStyle(PSPS_EVENTS_LAYER.highlightStyle);
+            if (!e.target.isPopupOpen()) e.target.openPopup();
+          },
+          mouseout(e) {
+            if (historicalPspsLayer) historicalPspsLayer.resetStyle(e.target);
+          }
+        });
+      }
+    }).addTo(historicalMapInstance);
+
     Object.keys(HISTORICAL_DATASETS).forEach((key) => {
       const config = HISTORICAL_DATASETS[key];
       historicalLayerGroups[key] = createHistoricalClusterGroup(config).addTo(historicalMapInstance);
@@ -422,6 +523,71 @@
   const getCurrentHistoricalYear = () => {
     if (!historicalYearInput || !historicalYears.length) return historicalYears[0];
     return historicalYears[Number(historicalYearInput.value)] ?? historicalYears[0];
+  };
+
+  const titleCaseCounty = (value) =>
+    String(value)
+      .toLowerCase()
+      .replace(/\b\w/g, (ch) => ch.toUpperCase());
+
+  const getSelectedHistoricalCounty = () =>
+    historicalCountyFilter ? historicalCountyFilter.value : "";
+
+  const getSelectedHistoricalUtility = () =>
+    historicalUtilityFilter ? historicalUtilityFilter.value : "";
+
+  const populateHistoricalCountyFilter = () => {
+    if (!historicalCountyFilter) return;
+    const previous = historicalCountyFilter.value;
+    const byKey = new Map();
+    (historicalDatasetRecords.epssPsps || []).forEach((record) => {
+      const raw = String(record.county || "").trim();
+      if (!raw) return;
+      const key = raw.toLowerCase();
+      if (!byKey.has(key)) byKey.set(key, titleCaseCounty(raw));
+    });
+    const counties = Array.from(byKey.values()).sort((a, b) => a.localeCompare(b));
+    historicalCountyFilter.innerHTML = "";
+    const allOption = document.createElement("option");
+    allOption.value = "";
+    allOption.textContent = "All counties";
+    historicalCountyFilter.appendChild(allOption);
+    counties.forEach((county) => {
+      const option = document.createElement("option");
+      option.value = county;
+      option.textContent = county;
+      historicalCountyFilter.appendChild(option);
+    });
+    if (previous && counties.some((c) => c.toLowerCase() === previous.toLowerCase())) {
+      const match = counties.find((c) => c.toLowerCase() === previous.toLowerCase());
+      historicalCountyFilter.value = match;
+    } else {
+      historicalCountyFilter.value = "";
+    }
+  };
+
+  const populateHistoricalUtilityFilter = () => {
+    if (!historicalUtilityFilter) return;
+    const previous = historicalUtilityFilter.value;
+    const utilities = Array.from(
+      new Set(
+        (historicalPspsGeoJson?.features || [])
+          .map((feature) => String(feature.properties?.IOU || "").trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b));
+    historicalUtilityFilter.innerHTML = "";
+    const allOption = document.createElement("option");
+    allOption.value = "";
+    allOption.textContent = "All utilities";
+    historicalUtilityFilter.appendChild(allOption);
+    utilities.forEach((utility) => {
+      const option = document.createElement("option");
+      option.value = utility;
+      option.textContent = utility;
+      historicalUtilityFilter.appendChild(option);
+    });
+    historicalUtilityFilter.value = utilities.includes(previous) ? previous : "";
   };
 
   const renderHistoricalChart = (countsByDataset, year) => {
@@ -493,10 +659,19 @@
 
   const renderHistoricalMapAndChart = (year) => {
     const countsByDataset = {};
+    const selectedCounty = getSelectedHistoricalCounty();
+    const selectedUtility = getSelectedHistoricalUtility();
+    const countyKey = selectedCounty ? selectedCounty.toLowerCase() : "";
 
     Object.entries(HISTORICAL_DATASETS).forEach(([key, config]) => {
       const records = historicalDatasetRecords[key] || [];
-      const yearRecords = records.filter((record) => record.year === year);
+      let yearRecords = records.filter((record) => record.year === year);
+      // County filter applies only to EPSS/PSPS point records (CPUC has no county).
+      if (key === "epssPsps" && countyKey) {
+        yearRecords = yearRecords.filter(
+          (record) => String(record.county || "").trim().toLowerCase() === countyKey
+        );
+      }
       countsByDataset[key] = yearRecords.length;
 
       if (!historicalMapInstance) return;
@@ -515,12 +690,26 @@
           fillOpacity: 0.75,
           weight: 1.5
         });
-        marker.bindPopup(
-          `<strong>${config.label}</strong><br/>${record.name || ""}<br/>${record.year}`
-        );
+        marker.bindPopup(buildHistoricalPointPopupHtml(key, config, record), { maxWidth: 320 });
         marker.addTo(group);
       });
     });
+
+    if (historicalPspsLayer) {
+      historicalPspsLayer.clearLayers();
+      if (historicalActiveLayers.has(PSPS_EVENTS_LAYER.key) && historicalPspsGeoJson) {
+        const yearFeatures = {
+          type: "FeatureCollection",
+          features: (historicalPspsGeoJson.features || []).filter((feature) => {
+            if (Number(feature.properties?.year) !== year) return false;
+            if (!selectedUtility) return true;
+            return String(feature.properties?.IOU || "").trim() === selectedUtility;
+          })
+        };
+        historicalPspsLayer.addData(yearFeatures);
+        historicalPspsLayer.bringToBack();
+      }
+    }
 
     renderHistoricalChart(countsByDataset, year);
   };
@@ -531,10 +720,27 @@
     initHistoricalMap();
 
     const keys = Object.keys(HISTORICAL_DATASETS);
-    const results = await Promise.all(keys.map((key) => loadHistoricalDatasetRecords(key)));
+    const [pointResults] = await Promise.all([
+      Promise.all(keys.map((key) => loadHistoricalDatasetRecords(key))),
+      loadHistoricalPspsEvents()
+    ]);
     keys.forEach((key, idx) => {
-      historicalDatasetRecords[key] = results[idx];
+      historicalDatasetRecords[key] = pointResults[idx];
     });
+
+    populateHistoricalCountyFilter();
+    populateHistoricalUtilityFilter();
+
+    if (historicalCountyFilter) {
+      historicalCountyFilter.addEventListener("change", () => {
+        renderHistoricalMapAndChart(getCurrentHistoricalYear());
+      });
+    }
+    if (historicalUtilityFilter) {
+      historicalUtilityFilter.addEventListener("change", () => {
+        renderHistoricalMapAndChart(getCurrentHistoricalYear());
+      });
+    }
 
     if (historicalChartToggle) {
       historicalChartToggle.querySelectorAll(".sfps-chart-toggle-btn").forEach((button) => {
@@ -549,6 +755,7 @@
     }
 
     renderHistoricalMapAndChart(getCurrentHistoricalYear());
+    initWeatherAnim();
   };
 
   const ensureHistoricalMapAndChart = () => {
@@ -560,6 +767,11 @@
     if (historicalMapInstance) historicalMapInstance.invalidateSize();
     if (historicalSummaryChartEl && typeof Plotly !== "undefined" && historicalSummaryChartEl.data) {
       Plotly.Plots.resize(historicalSummaryChartEl);
+    }
+    if (weatherAnimInitialized) {
+      resizeWeatherCanvas();
+      if (weatherAnimData && !weatherAnimLoading) drawWeatherFrame();
+      else if (weatherAnimLoading) drawWeatherLoadingState("Loading…");
     }
   };
 
@@ -606,6 +818,397 @@
     });
   };
 
+  const isHistoricalYearPlaying = () => historicalYearPlayTimer != null;
+
+  const stopHistoricalYearPlayback = () => {
+    if (historicalYearPlayTimer != null) {
+      clearInterval(historicalYearPlayTimer);
+      historicalYearPlayTimer = null;
+    }
+    if (historicalYearPlay) {
+      historicalYearPlay.textContent = "▶";
+      historicalYearPlay.setAttribute("aria-pressed", "false");
+      historicalYearPlay.setAttribute("aria-label", "Play year animation");
+    }
+  };
+
+  const advanceHistoricalYearStep = () => {
+    if (!historicalYearInput) return;
+    const max = Number(historicalYearInput.max) || 0;
+    const current = Number(historicalYearInput.value) || 0;
+    const next = max > 0 ? (current + 1) % (max + 1) : 0;
+    historicalYearInput.value = String(next);
+    historicalYearInput.dispatchEvent(new Event("input", { bubbles: true }));
+  };
+
+  const startHistoricalYearPlayback = () => {
+    if (historicalYearPlayTimer != null) return;
+    if (historicalYearPlay) {
+      historicalYearPlay.textContent = "⏸";
+      historicalYearPlay.setAttribute("aria-pressed", "true");
+      historicalYearPlay.setAttribute("aria-label", "Pause year animation");
+    }
+    historicalYearPlayTimer = setInterval(advanceHistoricalYearStep, 1500);
+  };
+
+  const weatherLerp = (a, b, t) => a + (b - a) * t;
+
+  const dangerToRgb = (value) => {
+    const v = Math.max(0, Math.min(255, value));
+    for (let i = 0; i < WEATHER_COLOR_STOPS.length - 1; i += 1) {
+      const left = WEATHER_COLOR_STOPS[i];
+      const right = WEATHER_COLOR_STOPS[i + 1];
+      if (v <= right.v) {
+        const span = right.v - left.v || 1;
+        const t = (v - left.v) / span;
+        return {
+          r: Math.round(weatherLerp(left.r, right.r, t)),
+          g: Math.round(weatherLerp(left.g, right.g, t)),
+          b: Math.round(weatherLerp(left.b, right.b, t))
+        };
+      }
+    }
+    const last = WEATHER_COLOR_STOPS[WEATHER_COLOR_STOPS.length - 1];
+    return { r: last.r, g: last.g, b: last.b };
+  };
+
+  const computeWeatherGridBounds = (cells) => {
+    let latMin = Infinity;
+    let latMax = -Infinity;
+    let lonMin = Infinity;
+    let lonMax = -Infinity;
+    cells.forEach((cell) => {
+      latMin = Math.min(latMin, cell.lat);
+      latMax = Math.max(latMax, cell.lat);
+      lonMin = Math.min(lonMin, cell.lon);
+      lonMax = Math.max(lonMax, cell.lon);
+    });
+    return { latMin, latMax, lonMin, lonMax };
+  };
+
+  const resizeWeatherCanvas = () => {
+    if (!weatherCanvas) return;
+    const wrap = weatherCanvas.parentElement;
+    const cssWidth = wrap ? wrap.clientWidth : weatherCanvas.clientWidth;
+    if (!cssWidth) return;
+
+    const aspect = 10 / 9;
+    const cssHeight = cssWidth / aspect;
+    const dpr = window.devicePixelRatio || 1;
+
+    weatherCanvas.width = Math.max(1, Math.round(cssWidth * dpr));
+    weatherCanvas.height = Math.max(1, Math.round(cssHeight * dpr));
+    weatherCanvas.style.height = `${cssHeight}px`;
+
+    weatherCanvasCtx = weatherCanvas.getContext("2d");
+    if (weatherCanvasCtx) {
+      weatherCanvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    if (weatherGridCells && weatherGridBounds) {
+      weatherCellLayout = computeWeatherCellLayout();
+    }
+  };
+
+  const computeWeatherCellLayout = () => {
+    if (!weatherCanvas || !weatherGridCells || !weatherGridBounds) return null;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = weatherCanvas.width / dpr;
+    const h = weatherCanvas.height / dpr;
+    const pad = Math.min(w, h) * WEATHER_PAD_FRACTION;
+    const plotW = Math.max(1, w - pad * 2);
+    const plotH = Math.max(1, h - pad * 2);
+    const { latMin, latMax, lonMin, lonMax } = weatherGridBounds;
+    const latSpan = latMax - latMin || 1;
+    const lonSpan = lonMax - lonMin || 1;
+
+    const cellLatPx = (0.24 / latSpan) * plotH;
+    const cellLonPx = (0.24 / lonSpan) * plotW;
+    const cellSize = Math.max(2.5, Math.min(cellLatPx, cellLonPx) * 0.92);
+
+    const positions = weatherGridCells.map((cell) => ({
+      x: pad + ((cell.lon - lonMin) / lonSpan) * plotW,
+      y: pad + ((latMax - cell.lat) / latSpan) * plotH
+    }));
+
+    return { positions, cellSize, plotW, plotH, pad, w, h };
+  };
+
+  const drawWeatherRoundRect = (ctx, x, y, size, radius) => {
+    const r = Math.min(radius, size / 2);
+    ctx.beginPath();
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(x, y, size, size, r);
+    } else {
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + size - r, y);
+      ctx.quadraticCurveTo(x + size, y, x + size, y + r);
+      ctx.lineTo(x + size, y + size - r);
+      ctx.quadraticCurveTo(x + size, y + size, x + size - r, y + size);
+      ctx.lineTo(x + r, y + size);
+      ctx.quadraticCurveTo(x, y + size, x, y + size - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+  };
+
+  const formatWeatherDate = (dateStr) => {
+    if (!dateStr) return "—";
+    const parts = dateStr.split("-").map(Number);
+    if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return dateStr;
+    const [year, month, day] = parts;
+    return weatherDateFormatter.format(new Date(year, month - 1, day));
+  };
+
+  const updateWeatherAnimUI = () => {
+    if (!weatherAnimData) return;
+    const nDays = weatherAnimData.dates.length;
+    const dayIndex = Math.floor(weatherAnimDayT) % nDays;
+    const frac = weatherAnimDayT - Math.floor(weatherAnimDayT);
+    const displayIndex = frac >= 0.5 ? (dayIndex + 1) % nDays : dayIndex;
+
+    if (weatherScrub) {
+      weatherScrub.max = String(Math.max(0, nDays - 1));
+      weatherScrub.value = String(displayIndex);
+    }
+    if (weatherDateEl) {
+      weatherDateEl.textContent = formatWeatherDate(weatherAnimData.dates[displayIndex]);
+    }
+  };
+
+  const drawWeatherLoadingState = (message = "Loading…") => {
+    if (!weatherCanvasCtx || !weatherCellLayout) return;
+    const { w, h } = weatherCellLayout;
+    weatherCanvasCtx.save();
+    weatherCanvasCtx.fillStyle = "#0a1628";
+    weatherCanvasCtx.fillRect(0, 0, w, h);
+    weatherCanvasCtx.fillStyle = "rgba(255, 255, 255, 0.72)";
+    weatherCanvasCtx.font = "600 0.95rem system-ui, sans-serif";
+    weatherCanvasCtx.textAlign = "center";
+    weatherCanvasCtx.textBaseline = "middle";
+    weatherCanvasCtx.fillText(message, w / 2, h / 2);
+    weatherCanvasCtx.restore();
+    if (weatherDateEl) weatherDateEl.textContent = message;
+  };
+
+  const drawWeatherFrame = () => {
+    if (!weatherCanvasCtx || !weatherCellLayout || !weatherAnimData) return;
+
+    const { positions, cellSize, w, h } = weatherCellLayout;
+    const nDays = weatherAnimData.dates.length;
+    if (!nDays) return;
+
+    const day0 = Math.floor(weatherAnimDayT) % nDays;
+    const day1 = (day0 + 1) % nDays;
+    const frac = weatherAnimDayT - Math.floor(weatherAnimDayT);
+    const values0 = weatherAnimData.values[day0];
+    const values1 = weatherAnimData.values[day1];
+    const half = cellSize / 2;
+    const radius = Math.max(1, cellSize * 0.18);
+    const ctx = weatherCanvasCtx;
+
+    ctx.save();
+    ctx.fillStyle = "#0a1628";
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.save();
+    ctx.globalAlpha = 0.42;
+    ctx.shadowColor = "rgba(255, 72, 0, 0.75)";
+    ctx.shadowBlur = cellSize * 1.35;
+    for (let i = 0; i < positions.length; i += 1) {
+      const v0 = values0[i] ?? 0;
+      const v1 = values1[i] ?? 0;
+      const danger = weatherLerp(v0, v1, frac);
+      if (danger <= WEATHER_GLOW_THRESHOLD) continue;
+      const { x, y } = positions[i];
+      const rgb = dangerToRgb(danger);
+      ctx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      drawWeatherRoundRect(ctx, x - half, y - half, cellSize, radius);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    for (let i = 0; i < positions.length; i += 1) {
+      const v0 = values0[i] ?? 0;
+      const v1 = values1[i] ?? 0;
+      const danger = weatherLerp(v0, v1, frac);
+      const { x, y } = positions[i];
+      const rgb = dangerToRgb(danger);
+      ctx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      drawWeatherRoundRect(ctx, x - half, y - half, cellSize, radius);
+      ctx.fill();
+    }
+
+    ctx.restore();
+    updateWeatherAnimUI();
+  };
+
+  const tickWeatherAnim = (now) => {
+    if (!weatherAnimPlaying) return;
+    if (weatherAnimLastFrameMs == null) weatherAnimLastFrameMs = now;
+    const elapsed = now - weatherAnimLastFrameMs;
+    weatherAnimLastFrameMs = now;
+
+    if (weatherAnimData && !weatherAnimLoading) {
+      const nDays = weatherAnimData.dates.length;
+      if (nDays > 0) {
+        weatherAnimDayT += (elapsed / WEATHER_DAY_DURATION_MS) * weatherAnimSpeed;
+        while (weatherAnimDayT >= nDays) weatherAnimDayT -= nDays;
+        drawWeatherFrame();
+      }
+    }
+
+    weatherAnimRafId = requestAnimationFrame(tickWeatherAnim);
+  };
+
+  const pauseWeatherAnim = () => {
+    weatherAnimPlaying = false;
+    weatherAnimLastFrameMs = null;
+    if (weatherAnimRafId != null) {
+      cancelAnimationFrame(weatherAnimRafId);
+      weatherAnimRafId = null;
+    }
+    if (weatherPlayBtn) {
+      weatherPlayBtn.textContent = "▶";
+      weatherPlayBtn.setAttribute("aria-pressed", "false");
+      weatherPlayBtn.setAttribute("aria-label", "Play fire-weather animation");
+    }
+  };
+
+  const startWeatherAnim = () => {
+    if (!weatherAnimData || weatherAnimLoading) return;
+    if (weatherAnimPlaying) return;
+    weatherAnimPlaying = true;
+    weatherAnimLastFrameMs = null;
+    if (weatherPlayBtn) {
+      weatherPlayBtn.textContent = "⏸";
+      weatherPlayBtn.setAttribute("aria-pressed", "true");
+      weatherPlayBtn.setAttribute("aria-label", "Pause fire-weather animation");
+    }
+    weatherAnimRafId = requestAnimationFrame(tickWeatherAnim);
+  };
+
+  const loadWeatherGrid = async () => {
+    if (weatherGridCells) return weatherGridCells;
+    const response = await fetch(`${WEATHER_ANIM_BASE}/grid_cells.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    weatherGridCells = await response.json();
+    weatherGridBounds = computeWeatherGridBounds(weatherGridCells);
+    resizeWeatherCanvas();
+    return weatherGridCells;
+  };
+
+  const loadWeatherYearData = async (year) => {
+    if (weatherYearCache[year]) return weatherYearCache[year];
+    const response = await fetch(`${WEATHER_ANIM_BASE}/weather_anim_${year}.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    weatherYearCache[year] = data;
+    return data;
+  };
+
+  const setWeatherAnimYear = async (year) => {
+    if (!weatherCanvas) return;
+    const loadToken = ++weatherAnimLoadToken;
+    pauseWeatherAnim();
+    weatherAnimYear = year;
+    weatherAnimDayT = 0;
+    weatherAnimData = null;
+    weatherAnimLoading = true;
+
+    if (!weatherGridCells) {
+      try {
+        await loadWeatherGrid();
+      } catch (error) {
+        if (loadToken !== weatherAnimLoadToken) return;
+        drawWeatherLoadingState("Grid unavailable");
+        weatherAnimLoading = false;
+        return;
+      }
+    }
+
+    if (loadToken !== weatherAnimLoadToken) return;
+    drawWeatherLoadingState("Loading…");
+
+    try {
+      const data = await loadWeatherYearData(year);
+      if (loadToken !== weatherAnimLoadToken) return;
+      weatherAnimData = data;
+      weatherAnimLoading = false;
+      if (weatherScrub) {
+        weatherScrub.max = String(Math.max(0, data.dates.length - 1));
+        weatherScrub.value = "0";
+      }
+      drawWeatherFrame();
+    } catch (error) {
+      if (loadToken !== weatherAnimLoadToken) return;
+      weatherAnimLoading = false;
+      drawWeatherLoadingState("Weather data unavailable");
+    }
+  };
+
+  const initWeatherAnim = async () => {
+    if (!weatherCanvas) return;
+    if (!weatherAnimInitialized) {
+      weatherAnimInitialized = true;
+      resizeWeatherCanvas();
+
+      if (weatherPlayBtn) {
+        weatherPlayBtn.addEventListener("click", () => {
+          if (weatherAnimPlaying) pauseWeatherAnim();
+          else startWeatherAnim();
+        });
+      }
+
+      if (weatherSpeedSelect) {
+        weatherAnimSpeed = Number(weatherSpeedSelect.value) || 1;
+        weatherSpeedSelect.addEventListener("change", () => {
+          weatherAnimSpeed = Number(weatherSpeedSelect.value) || 1;
+        });
+      }
+
+      if (weatherScrub) {
+        weatherScrub.addEventListener("input", () => {
+          pauseWeatherAnim();
+          if (!weatherAnimData) return;
+          const day = Number(weatherScrub.value) || 0;
+          weatherAnimDayT = day;
+          drawWeatherFrame();
+        });
+      }
+
+      const wrap = weatherCanvas.parentElement;
+      if (wrap && typeof ResizeObserver !== "undefined") {
+        weatherResizeObserver = new ResizeObserver(() => {
+          resizeWeatherCanvas();
+          if (weatherAnimData && !weatherAnimLoading) drawWeatherFrame();
+          else if (weatherAnimLoading) drawWeatherLoadingState("Loading…");
+        });
+        weatherResizeObserver.observe(wrap);
+      } else {
+        window.addEventListener("resize", () => {
+          resizeWeatherCanvas();
+          if (weatherAnimData && !weatherAnimLoading) drawWeatherFrame();
+        });
+      }
+    } else {
+      resizeWeatherCanvas();
+    }
+
+    try {
+      await loadWeatherGrid();
+      if (weatherAnimYear !== getCurrentHistoricalYear() || !weatherAnimData) {
+        await setWeatherAnimYear(getCurrentHistoricalYear());
+      } else {
+        drawWeatherFrame();
+      }
+    } catch (error) {
+      drawWeatherLoadingState("Weather animation unavailable");
+    }
+  };
+
   const initHistorical = () => {
     if (!historicalYearInput || !historicalYearValue || !historicalPlotsRank) return;
     if (!historicalYears.length) return;
@@ -627,11 +1230,30 @@
       historicalYearValue.textContent = String(year);
       renderHistoricalPlots(year);
       renderHistoricalMapAndChart(year);
+      setWeatherAnimYear(year);
       updateSliderFill();
     };
 
-    historicalYearInput.addEventListener("input", updateYear);
-    historicalYearInput.addEventListener("change", updateYear);
+    const handleYearInput = (event) => {
+      if (event.isTrusted && isHistoricalYearPlaying()) {
+        stopHistoricalYearPlayback();
+      }
+      updateYear();
+    };
+
+    historicalYearInput.addEventListener("input", handleYearInput);
+    historicalYearInput.addEventListener("change", handleYearInput);
+
+    if (historicalYearPlay) {
+      historicalYearPlay.addEventListener("click", () => {
+        if (isHistoricalYearPlaying()) {
+          stopHistoricalYearPlayback();
+        } else {
+          startHistoricalYearPlayback();
+        }
+      });
+    }
+
     updateYear();
   };
 
@@ -649,20 +1271,6 @@
       return String(value).replace(/_/g, " + ");
     }
     return value;
-  };
-  const getMetricLabel = (key) =>
-    (yMetricOptions.find((option) => option.key === key) || {}).label || key;
-
-  const getDisplayParams = () => {
-    const params = availableParams.length ? availableParams : hyperparams;
-    const hideControls = new Set(hiddenParamsForControls);
-    if (gridPlotsMode) hideControls.delete("alpha");
-    let filtered = params.filter((param) => !hideControls.has(param));
-    if (gridPlotsMode) {
-      filtered = filtered.filter((param) => param !== "grouping_method");
-    }
-    if (!usingDefaultCsv) return filtered;
-    return filtered.filter((param) => !hiddenParamsForDefault.has(param));
   };
 
   const parseCsvText = (text) => {
@@ -689,6 +1297,10 @@
         panel.classList.toggle("is-active", isActive);
         panel.toggleAttribute("hidden", !isActive);
       });
+      if (targetId !== "sfps-tab-historical") {
+        stopHistoricalYearPlayback();
+        pauseWeatherAnim();
+      }
       if (targetId === "sfps-tab-historical") {
         ensureHistoricalMapAndChart();
       }
@@ -900,17 +1512,6 @@
     return `${imageBasePath}${path}`;
   };
 
-  const isNumericColumn = (rows, key) => {
-    let hasValue = false;
-    for (const row of rows) {
-      const value = row[key];
-      if (value === undefined || value === null || value === "") continue;
-      hasValue = true;
-      if (Number.isNaN(Number(value))) return false;
-    }
-    return hasValue;
-  };
-
   const getUniqueValues = (rows, key) => {
     const values = new Set();
     rows.forEach((row) => {
@@ -924,303 +1525,6 @@
       return list.sort((a, b) => Number(a) - Number(b));
     }
     return list.sort();
-  };
-
-  const buildAxisSelects = () => {
-    xAxisSelect.innerHTML = "";
-    yAxisLeftSelect.innerHTML = "";
-    yAxisRightSelect.innerHTML = "";
-
-    getDisplayParams().forEach((param) => {
-      const option = document.createElement("option");
-      option.value = param;
-      option.textContent = getLabel(param);
-      xAxisSelect.appendChild(option);
-    });
-
-    const availableMetricOptions = yMetricOptions.filter((metric) => {
-      if (metric.type === "direct") {
-        return columns.includes(metric.key);
-      }
-      if (metric.type === "ratio") {
-        return columns.includes(metric.numerator) && columns.includes(metric.denominator);
-      }
-      return false;
-    });
-
-    const isPctLabel = (metric) => String(metric.label || "").startsWith("Pct");
-    const orderedMetricOptions = [
-      ...availableMetricOptions.filter((metric) => !isPctLabel(metric)),
-      ...availableMetricOptions.filter(isPctLabel)
-    ];
-
-    orderedMetricOptions.forEach((metric) => {
-      const optionLeft = document.createElement("option");
-      optionLeft.value = metric.key;
-      optionLeft.textContent = metric.label;
-      yAxisLeftSelect.appendChild(optionLeft);
-
-      const optionRight = document.createElement("option");
-      optionRight.value = metric.key;
-      optionRight.textContent = metric.label;
-      yAxisRightSelect.appendChild(optionRight);
-    });
-
-    const displayParams = getDisplayParams();
-    if (displayParams.length) {
-      xAxisSelect.value = displayParams[0];
-    }
-
-    const evalCostDefault =
-      orderedMetricOptions.find((metric) => metric.key === "true_cost") ||
-      orderedMetricOptions[0];
-
-    if (evalCostDefault) yAxisLeftSelect.value = evalCostDefault.key;
-    if (evalCostDefault) yAxisRightSelect.value = evalCostDefault.key;
-
-    // Populate per-plot method selects
-    const methodValues = getUniqueValues(dataset, "mht_method");
-    const filteredMethodValues = gridPlotsMode
-      ? filterGridMhtValues(methodValues)
-      : methodValues.filter((v) => allowedMhtMethods.has(String(v)));
-    [
-      { sel: methodLeftSelect,  preferredSlug: "group_conformal_random" },
-      { sel: methodRightSelect, preferredSlug: "co_optimized" },
-    ].forEach(({ sel, preferredSlug }) => {
-      if (!sel) return;
-      const prev = sel.value;
-      sel.innerHTML = "";
-      filteredMethodValues.forEach((v) => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = getOptionLabel("mht_method", v);
-        sel.appendChild(opt);
-      });
-      if (prev && filteredMethodValues.includes(prev)) sel.value = prev;
-      else sel.value = filteredMethodValues.includes(preferredSlug)
-        ? preferredSlug
-        : filteredMethodValues[0] || "";
-    });
-  };
-
-  const getCurrentFilters = () => {
-    const filters = {};
-    filterControls.querySelectorAll("select").forEach((select) => {
-      if (select.value) {
-        filters[select.dataset.param] = select.value;
-      }
-    });
-    return filters;
-  };
-
-  const buildFilterControls = () => {
-    filterControls.innerHTML = "";
-    const xAxis = xAxisSelect.value;
-    const currentFilters = getCurrentFilters();
-
-    getDisplayParams()
-      .filter((param) => param !== xAxis && param !== "mht_method")
-      .forEach((param) => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "sfps-field";
-        const label = document.createElement("label");
-        label.textContent = getLabel(param);
-        label.setAttribute("for", `filter-${param}`);
-        const select = document.createElement("select");
-        select.id = `filter-${param}`;
-        select.dataset.param = param;
-
-        const allOption = document.createElement("option");
-        allOption.value = "";
-        allOption.textContent = "All";
-        select.appendChild(allOption);
-
-        const filteredRows = dataset.filter((row) =>
-          Object.entries(currentFilters).every(([key, value]) => {
-            if (key === param) return true;
-            return String(row[key]) === value;
-          })
-        );
-
-        let values = getUniqueValues(filteredRows, param);
-        if (param === "mht_method" && !gridPlotsMode) {
-          values = values.filter((value) => allowedMhtMethods.has(String(value)));
-        }
-        if (param === "mht_method" && gridPlotsMode) {
-          values = filterGridMhtValues(values);
-        }
-        values.forEach((value) => {
-          const option = document.createElement("option");
-          option.value = value;
-          option.textContent =
-            param === "mht_method" ? getOptionLabel(param, value) : value;
-          select.appendChild(option);
-        });
-
-        select.addEventListener("change", renderPlot);
-        if (currentFilters[param]) {
-          select.value = currentFilters[param];
-          if (select.value !== currentFilters[param]) {
-            select.value = "";
-          }
-        }
-        wrapper.appendChild(label);
-        wrapper.appendChild(select);
-        filterControls.appendChild(wrapper);
-      });
-  };
-
-  const computeStats = (values) => {
-    const nums = values.map((val) => Number(val)).filter((val) => !Number.isNaN(val));
-    if (!nums.length) return { mean: 0, std: 0 };
-    const mean = nums.reduce((sum, val) => sum + val, 0) / nums.length;
-    const variance =
-      nums.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / nums.length;
-    return { mean, std: Math.sqrt(variance) };
-  };
-
-  const renderPlot = () => {
-    if (!dataset.length) return;
-    const xAxis = xAxisSelect.value;
-    const leftMetric = yAxisLeftSelect.value;
-    const rightMetric = yAxisRightSelect.value;
-
-    const filters = getCurrentFilters();
-
-    const filteredRows = dataset.filter((row) =>
-      Object.entries(filters).every(([key, value]) => String(row[key]) === value)
-    );
-
-    const getMetricConfig = (metricKey) =>
-      yMetricOptions.find((metric) => metric.key === metricKey);
-
-    const isMetricAvailable = (metric) => {
-      if (!metric) return false;
-      if (metric.type === "direct") {
-        return numericColumns.includes(metric.key);
-      }
-      if (metric.type === "ratio") {
-        return columns.includes(metric.numerator) && columns.includes(metric.denominator);
-      }
-      return false;
-    };
-
-    const getMetricValue = (row, metric) => {
-      if (metric.type === "direct") {
-        const raw = Number(row[metric.key]);
-        if (Number.isNaN(raw)) return NaN;
-        return metric.valueScale != null ? raw * metric.valueScale : raw;
-      }
-      if (metric.type === "ratio") {
-        const numerator = Number(row[metric.numerator]);
-        const denominator = Number(row[metric.denominator]);
-        if (Number.isNaN(numerator) || Number.isNaN(denominator) || denominator === 0) {
-          return NaN;
-        }
-        return (numerator / denominator) * 100;
-      }
-      return NaN;
-    };
-
-    const renderMetricPlot = (targetEl, metricKey, methodFilter) => {
-      const metric = getMetricConfig(metricKey);
-      const yLabel = getMetricLabel(metricKey);
-      if (!isMetricAvailable(metric)) {
-        targetEl.innerHTML = `<div class="sfps-status">${yLabel} unavailable</div>`;
-        return;
-      }
-
-      const plotRows = methodFilter
-        ? filteredRows.filter((r) => r.mht_method === methodFilter)
-        : filteredRows;
-
-      const grouped = new Map();
-      plotRows.forEach((row) => {
-        const xValue = row[xAxis];
-        if (xValue === undefined || xValue === null || xValue === "") return;
-        if (!grouped.has(xValue)) grouped.set(xValue, []);
-        grouped.get(xValue).push(getMetricValue(row, metric));
-      });
-
-      const xValues = Array.from(grouped.keys());
-      const sortedXValues = xValues.every((val) => !Number.isNaN(Number(val)))
-        ? xValues.sort((a, b) => Number(a) - Number(b))
-        : xValues.sort();
-
-      // Map raw mht_method slugs to human-readable labels on the x-axis
-      const xDisplayValues = xAxis === "mht_method"
-        ? sortedXValues.map((v) => getOptionLabel("mht_method", v))
-        : sortedXValues;
-
-      const means = [];
-      const uppers = [];
-      const lowers = [];
-
-      sortedXValues.forEach((xValue) => {
-        const stats = computeStats(grouped.get(xValue));
-        means.push(stats.mean);
-        uppers.push(stats.mean + stats.std);
-        lowers.push(stats.mean - stats.std);
-      });
-
-      const meanTrace = {
-        x: xDisplayValues,
-        y: means,
-        type: "scatter",
-        mode: "lines+markers",
-        name: `${yLabel} mean`,
-        line: { color: "#1f77b4" }
-      };
-
-      const upperTrace = {
-        x: xDisplayValues,
-        y: uppers,
-        type: "scatter",
-        mode: "lines",
-        line: { width: 0 },
-        hoverinfo: "skip",
-        showlegend: false
-      };
-
-      const lowerTrace = {
-        x: xDisplayValues,
-        y: lowers,
-        type: "scatter",
-        mode: "lines",
-        fill: "tonexty",
-        fillcolor: "rgba(31, 119, 180, 0.2)",
-        line: { width: 0 },
-        name: "±1 std",
-        hoverinfo: "skip"
-      };
-
-      const yAxisConfig = { title: yLabel };
-      if (metric.type === "ratio") {
-        yAxisConfig.rangemode = "tozero";
-      }
-
-      const layout = {
-        xaxis: { title: getLabel(xAxis) },
-        yaxis: yAxisConfig,
-        margin: { t: 20, r: 20, b: 80, l: 60 },
-        legend: {
-          orientation: "h",
-          x: 0.5,
-          xanchor: "center",
-          y: -0.25,
-          yanchor: "top"
-        }
-      };
-
-      Plotly.newPlot(targetEl, [upperTrace, lowerTrace, meanTrace], layout, {
-        responsive: true
-      });
-    };
-
-    renderMetricPlot(trendPlotOpt, leftMetric, methodLeftSelect ? methodLeftSelect.value : "");
-    renderMetricPlot(trendPlotTrue, rightMetric, methodRightSelect ? methodRightSelect.value : "");
-    plotTitleLeft.textContent = getMetricLabel(leftMetric);
-    plotTitleRight.textContent = getMetricLabel(rightMetric);
   };
 
   const rebuildGridImageMetaFromDataset = () => {
@@ -1290,9 +1594,6 @@
 
   const handleCsvData = (rows) => {
     dataset = rows;
-    columns = rows.length ? Object.keys(rows[0]) : [];
-    numericColumns = columns.filter((col) => isNumericColumn(rows, col));
-    availableParams = hyperparams.filter((param) => columns.includes(param));
 
     if (gridPlotsMode && rows.length) {
       rebuildGridImageMetaFromDataset();
@@ -1300,14 +1601,7 @@
       syncGridImageDefaultsFromDataset(exp0.length ? exp0 : rows);
     }
 
-    if (!numericColumns.length || !availableParams.length) {
-      return;
-    }
-
-    buildAxisSelects();
-    buildFilterControls();
     buildImageControls();
-    renderPlot();
     renderImage();
   };
 
@@ -1871,22 +2165,6 @@
     }
   };
 
-  xAxisSelect.addEventListener("change", () => {
-    buildFilterControls();
-    renderPlot();
-  });
-  yAxisLeftSelect.addEventListener("change", renderPlot);
-  yAxisRightSelect.addEventListener("change", renderPlot);
-  if (methodLeftSelect) methodLeftSelect.addEventListener("change", renderPlot);
-  if (methodRightSelect) methodRightSelect.addEventListener("change", renderPlot);
-  resetPart1Button.addEventListener("click", () => {
-    buildAxisSelects();
-    filterControls.querySelectorAll("select").forEach((select) => {
-      select.value = "";
-    });
-    buildFilterControls();
-    renderPlot();
-  });
   resetPart2Button.addEventListener("click", async () => {
     imageSelection = { suffix: gridPlotsMode ? "none" : "" };
     userSelected.clear();

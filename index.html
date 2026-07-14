@@ -47,26 +47,12 @@
         data-tab="sfps-tab-sectionalization"
       >Planning Tool</button>
       <button
-        id="sfps-tab-btn-conformal"
-        class="sfps-tab-button"
-        type="button" role="tab" aria-selected="false"
-        aria-controls="sfps-tab-conformal"
-        data-tab="sfps-tab-conformal"
-      >Conformal Prediction Demo</button>
-      <button
         id="sfps-tab-btn-historical"
         class="sfps-tab-button"
         type="button" role="tab" aria-selected="false"
         aria-controls="sfps-tab-historical"
         data-tab="sfps-tab-historical"
-      >Historical Data</button>
-      <button
-        id="sfps-tab-btn-optimization"
-        class="sfps-tab-button"
-        type="button" role="tab" aria-selected="false"
-        aria-controls="sfps-tab-optimization"
-        data-tab="sfps-tab-optimization"
-      >Optimization Results</button>
+      >Wildfire &amp; Outage Map</button>
     </nav>
 
     <div class="sfps-tab-panels">
@@ -252,21 +238,7 @@
 
 
       <!-- ═══════════════════════════════════════════════════════════════
-           TAB 2 · CONFORMAL PREDICTION DEMO
-           ═══════════════════════════════════════════════════════════════ -->
-      <section
-        id="sfps-tab-conformal"
-        class="sfps-section sfps-tab-panel sfps-tab-panel--conformal"
-        role="tabpanel"
-        aria-labelledby="sfps-tab-btn-conformal"
-        hidden
-      >
-        <div id="conformal-demo-root" class="sfps-conformal-root" aria-label="Conformal Prediction Demo"></div>
-      </section>
-
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           TAB 3 · HISTORICAL DATA ANALYSIS
+           TAB 2 · HISTORICAL DATA ANALYSIS
            ═══════════════════════════════════════════════════════════════ -->
       <section
         id="sfps-tab-historical"
@@ -277,10 +249,33 @@
       >
         <div class="sfps-historical-layout">
           <div class="sfps-panel sfps-controls sfps-historical-controls">
-            <div class="sfps-field sfps-field--year">
-              <label for="historical-year" class="sfps-year-label">Year</label>
-              <input id="historical-year" type="range" />
-              <div id="historical-year-value" class="sfps-year-badge"></div>
+            <div class="sfps-historical-filter-row">
+              <div class="sfps-field sfps-field--year">
+                <label for="historical-year" class="sfps-year-label">Year</label>
+                <input id="historical-year" type="range" />
+                <div id="historical-year-value" class="sfps-year-badge"></div>
+                <button
+                  id="historical-year-play"
+                  type="button"
+                  class="sfps-historical-year-play"
+                  aria-label="Play year animation"
+                  aria-pressed="false"
+                >▶</button>
+              </div>
+              <div class="sfps-historical-filter-pills">
+                <label class="sfps-historical-filter-pill" for="historical-county-filter">
+                  <span class="sfps-historical-filter-pill-label">County</span>
+                  <select id="historical-county-filter" aria-label="County filter">
+                    <option value="">All counties</option>
+                  </select>
+                </label>
+                <label class="sfps-historical-filter-pill" for="historical-utility-filter">
+                  <span class="sfps-historical-filter-pill-label">Utility</span>
+                  <select id="historical-utility-filter" aria-label="Utility filter">
+                    <option value="">All utilities</option>
+                  </select>
+                </label>
+              </div>
             </div>
             <div class="sfps-controls-section-label">Map layers</div>
             <div id="historical-layer-toggles" class="sfps-historical-layer-toggles"></div>
@@ -297,10 +292,38 @@
               </div>
               <div id="historical-map" class="sfps-historical-map"></div>
 
-              <!-- TODO: cloud/weather GIF goes here -->
-              <div id="historical-cloud-gif" class="sfps-historical-cloud-placeholder">
-                <!-- TODO: cloud/weather GIF goes here -->
-                <span class="sfps-historical-cloud-placeholder-text">Day-by-day cloud / weather animation placeholder</span>
+              <div id="historical-weather-anim" class="sfps-weather-anim">
+                <div class="sfps-weather-anim-header">
+                  <h3 class="sfps-weather-anim-title">Fire-Weather Conditions</h3>
+                </div>
+                <div class="sfps-weather-anim-canvas-wrap">
+                  <canvas id="historical-weather-canvas" aria-label="Fire-weather danger animation"></canvas>
+                </div>
+                <p class="sfps-weather-anim-caption">Combined temperature, humidity, and wind conditions driving fire risk across California.</p>
+                <div class="sfps-weather-anim-controls">
+                  <button
+                    id="historical-weather-play"
+                    type="button"
+                    class="sfps-historical-year-play sfps-weather-anim-play"
+                    aria-label="Play fire-weather animation"
+                    aria-pressed="false"
+                  >▶</button>
+                  <label class="sfps-weather-anim-speed-label" for="historical-weather-speed">
+                    <span class="sfps-weather-anim-speed-text">Speed</span>
+                    <select id="historical-weather-speed" aria-label="Animation speed">
+                      <option value="1">1x</option>
+                      <option value="2">2x</option>
+                      <option value="4">4x</option>
+                    </select>
+                  </label>
+                  <input id="historical-weather-scrub" type="range" min="0" max="364" value="0" aria-label="Day of year" />
+                  <div id="historical-weather-date" class="sfps-weather-anim-date">—</div>
+                </div>
+                <div class="sfps-weather-anim-legend" aria-hidden="false">
+                  <span class="sfps-weather-anim-legend-label">Lower fire-weather risk</span>
+                  <div class="sfps-weather-anim-legend-bar" aria-hidden="true"></div>
+                  <span class="sfps-weather-anim-legend-label">Higher fire-weather risk</span>
+                </div>
               </div>
             </div>
 
@@ -323,90 +346,6 @@
         </div>
       </section>
 
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           TAB 4 · OPTIMIZATION RESULTS
-           ═══════════════════════════════════════════════════════════════ -->
-      <section
-        id="sfps-tab-optimization"
-        class="sfps-section sfps-tab-panel"
-        role="tabpanel"
-        aria-labelledby="sfps-tab-btn-optimization"
-        hidden
-      >
-        <div class="sfps-split">
-          <div class="sfps-panel sfps-controls">
-            <div class="sfps-controls-header">
-              <span class="sfps-controls-title">Chart Settings</span>
-            </div>
-            <div class="sfps-field">
-              <label for="x-axis">X axis</label>
-              <select id="x-axis"></select>
-            </div>
-            <div class="sfps-controls-section-label">Filters</div>
-            <div id="filter-controls" class="sfps-grid"></div>
-            <button id="reset-part1" class="sfps-button sfps-button--ghost sfps-button--download">↺ Reset</button>
-          </div>
-
-          <div class="sfps-content">
-            <div class="sfps-plot-grid">
-              <div class="sfps-plot-card">
-                <h3 class="sfps-plot-title" id="plot-title-left">Optimization Results</h3>
-                <div id="trend-plot-opt" class="sfps-plot"></div>
-                <div class="sfps-plot-under-controls">
-                  <div class="sfps-field">
-                    <label for="y-axis-left">Y axis</label>
-                    <select id="y-axis-left"></select>
-                  </div>
-                  <div class="sfps-field">
-                    <label for="method-left">Method</label>
-                    <select id="method-left"></select>
-                  </div>
-                </div>
-              </div>
-              <div class="sfps-plot-card">
-                <h3 class="sfps-plot-title" id="plot-title-right">Evaluation</h3>
-                <div id="trend-plot-true" class="sfps-plot"></div>
-                <div class="sfps-plot-under-controls">
-                  <div class="sfps-field">
-                    <label for="y-axis-right">Y axis</label>
-                    <select id="y-axis-right"></select>
-                  </div>
-                  <div class="sfps-field">
-                    <label for="method-right">Method</label>
-                    <select id="method-right"></select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Key insights section -->
-        <section class="sfps-fullbleed sfps-params-section" aria-labelledby="sfps-insights-heading">
-          <h2 id="sfps-insights-heading" class="sfps-params-heading">Key insights</h2>
-          <div class="sfps-params-row">
-            <div class="sfps-param-block">
-              <h4 class="sfps-param-title">Coordinated planning outperforms separation</h4>
-              <p>Coordinating long-term infrastructure planning with short-term operational decisions can outperform treating them as separate problems.</p>
-            </div>
-            <div class="sfps-param-block">
-              <h4 class="sfps-param-title">Flexibility enables targeted interventions</h4>
-              <p>Infrastructure configurations that improve operational flexibility enable more targeted interventions during high-risk conditions, reducing unnecessary shutoffs.</p>
-            </div>
-            <div class="sfps-param-block">
-              <h4 class="sfps-param-title">Risk reduction within reliability limits</h4>
-              <p>The coordinated approach can reduce wildfire ignition risk while still respecting system-wide reliability constraints on customer interruptions.</p>
-            </div>
-            <div class="sfps-param-block">
-              <h4 class="sfps-param-title">Calibrated uncertainty avoids conservatism</h4>
-              <p>Better-calibrated uncertainty sets avoid unnecessary conservatism, leading to more effective plans that act where risk is truly elevated.</p>
-            </div>
-          </div>
-        </section>
-
-      </section>
-
     </div><!-- /sfps-tab-panels -->
   </div><!-- /sfps-fullbleed -->
 
@@ -419,9 +358,5 @@
   crossorigin=""></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 <script src="./assets/js/sect-fasttrip-psps.js"></script>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script type="text/babel" data-presets="react" src="./assets/js/conformal_demo.js"></script>
 </body>
 </html>
