@@ -292,24 +292,17 @@
               </div>
               <div id="historical-map" class="sfps-historical-map"></div>
 
-              <div id="historical-weather-anim" class="sfps-weather-anim">
-                <div class="sfps-weather-anim-header">
-                  <h3 class="sfps-weather-anim-title">Fire-Weather Conditions</h3>
-                </div>
-                <div class="sfps-weather-anim-canvas-wrap">
-                  <canvas id="historical-weather-canvas" aria-label="Fire-weather danger animation"></canvas>
-                </div>
-                <p class="sfps-weather-anim-caption">Combined temperature, humidity, and wind conditions driving fire risk across California.</p>
-                <div class="sfps-weather-anim-controls">
+              <div id="historical-weather-strip" class="sfps-weather-strip">
+                <div class="sfps-weather-strip-controls">
                   <button
                     id="historical-weather-play"
                     type="button"
-                    class="sfps-historical-year-play sfps-weather-anim-play"
+                    class="sfps-historical-year-play sfps-weather-strip-play"
                     aria-label="Play fire-weather animation"
                     aria-pressed="false"
                   >▶</button>
-                  <label class="sfps-weather-anim-speed-label" for="historical-weather-speed">
-                    <span class="sfps-weather-anim-speed-text">Speed</span>
+                  <label class="sfps-weather-strip-speed-label" for="historical-weather-speed">
+                    <span class="sfps-weather-strip-speed-text">Speed</span>
                     <select id="historical-weather-speed" aria-label="Animation speed">
                       <option value="1">1x</option>
                       <option value="2">2x</option>
@@ -317,12 +310,27 @@
                     </select>
                   </label>
                   <input id="historical-weather-scrub" type="range" min="0" max="364" value="0" aria-label="Day of year" />
-                  <div id="historical-weather-date" class="sfps-weather-anim-date">—</div>
+                  <div id="historical-weather-date" class="sfps-weather-strip-date">—</div>
                 </div>
-                <div class="sfps-weather-anim-legend" aria-hidden="false">
-                  <span class="sfps-weather-anim-legend-label">Lower fire-weather risk</span>
-                  <div class="sfps-weather-anim-legend-bar" aria-hidden="true"></div>
-                  <span class="sfps-weather-anim-legend-label">Higher fire-weather risk</span>
+                <div id="historical-weather-legend" class="sfps-weather-strip-legend" aria-label="Fire-weather danger bands"></div>
+                <div class="sfps-weather-strip-attribution-row">
+                  <p id="historical-weather-attribution" class="sfps-weather-strip-attribution">—</p>
+                  <button
+                    id="historical-weather-source-info"
+                    type="button"
+                    class="sfps-weather-source-info"
+                    aria-label="Show full data source and citation"
+                    aria-expanded="false"
+                    aria-controls="historical-weather-source-popover"
+                    hidden
+                  >ⓘ</button>
+                  <div
+                    id="historical-weather-source-popover"
+                    class="sfps-weather-source-popover"
+                    role="dialog"
+                    aria-label="Fire-weather data source"
+                    hidden
+                  ></div>
                 </div>
               </div>
             </div>
@@ -357,6 +365,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   crossorigin=""></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-contour@4"></script>
 <script src="./assets/js/sect-fasttrip-psps.js"></script>
 </body>
 </html>
