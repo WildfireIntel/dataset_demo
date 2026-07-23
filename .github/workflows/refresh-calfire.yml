@@ -1,0 +1,43 @@
+# Hits the CAL FIRE developer-published CSV endpoint
+# (https://incidents.fire.ca.gov/imapdata/mapdataall.csv), not the HTML
+# incident site. Confirmed acceptable for one-time pulls; flagged for
+# sign-off before unattended scheduling per the source pipeline's own
+# documentation.
+
+name: Refresh CAL FIRE data
+
+on:
+  schedule:
+    # Mondays 14:00 UTC (~morning US West/East)
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download CAL FIRE incidents CSV
+        run: |
+          curl -fsSL \
+            -o assets/data/calfire_incidents.csv \
+            "https://incidents.fire.ca.gov/imapdata/mapdataall.csv"
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/data/calfire_incidents.csv
+          if git diff --staged --quiet; then
+            echo "No changes to calfire_incidents.csv; skipping commit."
+            exit 0
+          fi
+          git commit -m "Auto-refresh CAL FIRE data"
+          git push origin HEAD:main

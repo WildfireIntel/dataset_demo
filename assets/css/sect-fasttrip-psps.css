@@ -773,6 +773,14 @@ article.page:has(#sect-fasttrip-psps) .page__content {
   white-space: nowrap;
 }
 
+.sfps-historical-download-data {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .sfps-historical-filter-pill select {
   border: none;
   background: transparent;

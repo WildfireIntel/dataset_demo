@@ -22,6 +22,7 @@
   const historicalMapEl = document.getElementById("historical-map");
   const historicalSummaryChartEl = document.getElementById("historical-summary-chart");
   const historicalChartToggle = document.getElementById("historical-chart-toggle");
+  const historicalDownloadDataBtn = document.getElementById("historical-download-data");
   const weatherPlayBtn = document.getElementById("historical-weather-play");
   const weatherSpeedSelect = document.getElementById("historical-weather-speed");
   const weatherScrub = document.getElementById("historical-weather-scrub");
@@ -186,7 +187,7 @@
       label: "CPUC Ignition Events",
       chartShortLabel: "CPUC Ignitions",
       color: "#c0440e", // var(--sfps-bonf)
-      dataUrl: `${basePath}/assets/data/cpuc_ignitions.csv`,
+      dataUrl: `${basePath}/assets/data/cpuc_fire_incidents_combined.csv`,
       sampleData: [
         { lat: 39.76, lon: -121.62, year: 2020, name: "Butte County ignition" },
         { lat: 38.58, lon: -122.93, year: 2020, name: "Sonoma County ignition" },
@@ -204,11 +205,11 @@
         { lat: 38.3,  lon: -121.0,  year: 2024, name: "Sacramento County ignition" }
       ]
     },
-    epssPsps: {
-      label: "EPSS / PSPS Outage Events",
-      chartShortLabel: "EPSS / PSPS",
+    epss: {
+      label: "EPSS Outage Events",
+      chartShortLabel: "EPSS",
       color: "#1d6fa5", // var(--sfps-blue)
-      dataUrl: `${basePath}/assets/data/epss_psps_outages.csv`,
+      dataUrl: `${basePath}/assets/data/epss_outages.csv`,
       sampleData: [
         { lat: 39.9,  lon: -121.0,  year: 2020, name: "Plumas circuit de-energized" },
         { lat: 38.45, lon: -122.71, year: 2020, name: "Napa circuit fast-trip" },
@@ -224,6 +225,14 @@
         { lat: 35.9,  lon: -119.3,  year: 2024, name: "Tulare circuit fast-trip" },
         { lat: 40.3,  lon: -121.4,  year: 2024, name: "Lassen circuit de-energized" }
       ]
+    },
+    calfire: {
+      label: "CAL FIRE Incidents",
+      chartShortLabel: "CAL FIRE",
+      color: "#b91c1c",
+      dataUrl: `${basePath}/assets/data/calfire_incidents.csv`,
+      bubbleByAcres: true,
+      cluster: false
     }
   };
 
@@ -285,6 +294,7 @@
   const WEATHER_THRESHOLDS = [1, 39, 75, 135];
   const WEATHER_DAY_DURATION_MS = 100;
   const WEATHER_FILL_OPACITY = 0.55;
+  const CPUC_FADE_DAYS = 3;
   const weatherDateFormatter = new Intl.DateTimeFormat(undefined, {
     month: "long",
     day: "numeric",
@@ -304,6 +314,8 @@
   let weatherAnimInitialized = false;
   let weatherAnimLoading = false;
   let weatherAnimLoadToken = 0;
+  let weatherDayFilterActive = false;
+  let weatherLastSyncedDayIndex = null;
 
   const loadHistoricalDatasetRecords = async (key) => {
     const config = HISTORICAL_DATASETS[key];
@@ -314,14 +326,59 @@
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const text = await response.text();
       const rows = parseCsvText(text);
+
+      if (key === "calfire") {
+        const records = rows
+          .map((row) => {
+            const lat = Number(row.incident_latitude);
+            const lon = Number(row.incident_longitude);
+            const date = String(row.incident_dateonly_created || "").trim();
+            const yearMatch = date.match(/^(\d{4})/);
+            const year = yearMatch ? Number(yearMatch[1]) : NaN;
+            const acresRaw = Number(row.incident_acres_burned);
+            const acres = Number.isFinite(acresRaw) ? acresRaw : null;
+            const containmentRaw = Number(row.incident_containment);
+            const containment = Number.isFinite(containmentRaw) ? containmentRaw : null;
+            const endDate = String(row.incident_dateonly_extinguished || "").trim();
+            return {
+              lat,
+              lon,
+              year,
+              date,
+              end_date: endDate || null,
+              name: String(row.incident_name || "").trim() || config.label,
+              county: String(row.incident_county || "").trim(),
+              acres,
+              containment,
+              incident_type: String(row.incident_type || "").trim()
+            };
+          })
+          .filter((row) => {
+            if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon) || !Number.isFinite(row.year)) {
+              return false;
+            }
+            if (row.lat < 32 || row.lat > 43 || row.lon < -125 || row.lon > -113) return false;
+            if (row.year < 2020 || row.year > 2025) return false;
+            return Boolean(row.date);
+          });
+        console.log(`CAL FIRE: ${records.length} rows after CA bounds + 2020-2025 filters`);
+        return records;
+      }
+
       return rows
-        .map((row) => ({
-          ...row,
-          lat: Number(row.lat),
-          lon: Number(row.lon),
-          year: Number(row.year),
-          name: row.name || row.description || config.label
-        }))
+        .map((row) => {
+          const utility = String(row.utility || "").trim();
+          return {
+            ...row,
+            lat: Number(row.lat),
+            lon: Number(row.lon),
+            year: Number(row.year),
+            utility,
+            name: utility
+              ? `${utility} Ignition`
+              : row.name || row.description || config.label
+          };
+        })
         .filter((row) => Number.isFinite(row.lat) && Number.isFinite(row.lon) && Number.isFinite(row.year));
     } catch (error) {
       // Fall back to placeholder data if the real CSV isn't available yet.
@@ -364,6 +421,7 @@
   const HISTORICAL_POINT_NUMERIC_FIELDS = new Set([
     "customer_minutes",
     "restoration_min",
+    "acres",
     ...HISTORICAL_POINT_CRITICAL_COUNT_FIELDS
   ]);
 
@@ -377,6 +435,11 @@
   };
 
   const formatHistoricalPointPopupValue = (fieldKey, value) => {
+    if (fieldKey === "containment") {
+      const num = Number(value);
+      if (Number.isFinite(num)) return `${num}%`;
+      return String(value);
+    }
     if (HISTORICAL_POINT_NUMERIC_FIELDS.has(fieldKey)) {
       const num = Number(value);
       if (Number.isFinite(num)) return num.toLocaleString();
@@ -389,10 +452,9 @@
     if (key === "cpuc") {
       rowDefs = [
         ["Date", "date", record.date],
-        ["Time", "time", record.time],
-        ["Coordinates", "_coords", `${record.lat.toFixed(4)}, ${record.lon.toFixed(4)}`]
+        ["Utility", "utility", record.utility]
       ];
-    } else if (key === "epssPsps") {
+    } else if (key === "epss") {
       rowDefs = [
         ["Circuit", "circuit", record.circuit],
         ["County", "county", record.county],
@@ -406,6 +468,14 @@
         ["Schools", "schools", record.schools],
         ["Hospitals", "hospitals", record.hospitals]
       ];
+    } else if (key === "calfire") {
+      rowDefs = [
+        ["County", "county", record.county],
+        ["Acres burned", "acres", record.acres],
+        ["Containment", "containment", record.containment],
+        ["Date", "date", record.date],
+        ["Type", "incident_type", record.incident_type]
+      ];
     } else {
       rowDefs = [];
     }
@@ -417,7 +487,9 @@
         fieldKey === "_coords" ? value : formatHistoricalPointPopupValue(fieldKey, value)
       ]);
 
-    return buildHistoricalPopupTableHtml(config.label, config.color, rows);
+    const title =
+      key === "cpuc" || key === "calfire" ? record.name || config.label : config.label;
+    return buildHistoricalPopupTableHtml(title, config.color, rows);
   };
 
   const buildPspsPopupHtml = (properties) => {
@@ -542,8 +614,16 @@
 
     Object.keys(HISTORICAL_DATASETS).forEach((key) => {
       const config = HISTORICAL_DATASETS[key];
-      historicalLayerGroups[key] = createHistoricalClusterGroup(config).addTo(historicalMapInstance);
+      const group =
+        config.cluster === false ? L.layerGroup() : createHistoricalClusterGroup(config);
+      historicalLayerGroups[key] = group.addTo(historicalMapInstance);
     });
+  };
+
+  const calfireBubbleRadius = (record) => {
+    const acres = Number(record.acres);
+    const forRadius = Number.isFinite(acres) && acres > 0 ? acres : 1;
+    return Math.max(4, Math.min(28, 4 + Math.log10(forRadius) * 5));
   };
 
   const getCurrentHistoricalYear = () => {
@@ -566,7 +646,7 @@
     if (!historicalCountyFilter) return;
     const previous = historicalCountyFilter.value;
     const byKey = new Map();
-    (historicalDatasetRecords.epssPsps || []).forEach((record) => {
+    (historicalDatasetRecords.epss || []).forEach((record) => {
       const raw = String(record.county || "").trim();
       if (!raw) return;
       const key = raw.toLowerCase();
@@ -595,13 +675,15 @@
   const populateHistoricalUtilityFilter = () => {
     if (!historicalUtilityFilter) return;
     const previous = historicalUtilityFilter.value;
-    const utilities = Array.from(
-      new Set(
-        (historicalPspsGeoJson?.features || [])
-          .map((feature) => String(feature.properties?.IOU || "").trim())
-          .filter(Boolean)
-      )
-    ).sort((a, b) => a.localeCompare(b));
+    const fromPsps = (historicalPspsGeoJson?.features || [])
+      .map((feature) => String(feature.properties?.IOU || "").trim())
+      .filter(Boolean);
+    const fromCpuc = (historicalDatasetRecords.cpuc || [])
+      .map((record) => String(record.utility || "").trim())
+      .filter(Boolean);
+    const utilities = Array.from(new Set([...fromPsps, ...fromCpuc])).sort((a, b) =>
+      a.localeCompare(b)
+    );
     historicalUtilityFilter.innerHTML = "";
     const allOption = document.createElement("option");
     allOption.value = "";
@@ -683,21 +765,120 @@
     Plotly.react(historicalSummaryChartEl, data, layout, { displayModeBar: false, responsive: true });
   };
 
-  const renderHistoricalMapAndChart = (year) => {
-    const countsByDataset = {};
-    const selectedCounty = getSelectedHistoricalCounty();
-    const selectedUtility = getSelectedHistoricalUtility();
-    const countyKey = selectedCounty ? selectedCounty.toLowerCase() : "";
+  const parseIsoDate = (value) => {
+    if (value === undefined || value === null || value === "") return null;
+    const match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return null;
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  };
 
-    Object.entries(HISTORICAL_DATASETS).forEach(([key, config]) => {
-      const records = historicalDatasetRecords[key] || [];
-      let yearRecords = records.filter((record) => record.year === year);
-      // County filter applies only to EPSS/PSPS point records (CPUC has no county).
-      if (key === "epssPsps" && countyKey) {
-        yearRecords = yearRecords.filter(
+  const calendarDayDiffAbs = (a, b) => {
+    const da = parseIsoDate(a);
+    const db = parseIsoDate(b);
+    if (!da || !db) return Infinity;
+    return Math.abs(Math.round((da - db) / 86400000));
+  };
+
+  const dateInInclusiveRange = (current, start, end) => {
+    const c = parseIsoDate(current);
+    const s = parseIsoDate(start);
+    const e = parseIsoDate(end || start);
+    if (!c || !s || !e) return false;
+    return c >= s && c <= e;
+  };
+
+  const getWeatherDisplayDate = () => {
+    if (!weatherAnimData?.dates?.length) return null;
+    const nDays = weatherAnimData.dates.length;
+    const dayIndex = Math.floor(weatherAnimDayT) % nDays;
+    return weatherAnimData.dates[dayIndex] || null;
+  };
+
+  const getWeatherIntegerDayIndex = () => {
+    if (!weatherAnimData?.dates?.length) return null;
+    return Math.floor(weatherAnimDayT) % weatherAnimData.dates.length;
+  };
+
+  const recordVisibleOnDay = (key, record, currentDate) => {
+    if (!currentDate) return true;
+    if (key === "cpuc") {
+      return calendarDayDiffAbs(record.date, currentDate) <= CPUC_FADE_DAYS;
+    }
+    if (key === "epss") {
+      return dateInInclusiveRange(currentDate, record.date, record.end_date || record.date);
+    }
+    if (key === "calfire") {
+      if (record.end_date) {
+        return dateInInclusiveRange(currentDate, record.date, record.end_date);
+      }
+      return calendarDayDiffAbs(record.date, currentDate) <= CPUC_FADE_DAYS;
+    }
+    return true;
+  };
+
+  const pspsFeatureVisibleOnDay = (feature, currentDate) => {
+    if (!currentDate) return true;
+    const props = feature?.properties || {};
+    return dateInInclusiveRange(
+      currentDate,
+      props.DeEnergizationStartDate,
+      props.FullRestorationDate || props.DeEnergizationStartDate
+    );
+  };
+
+  const getFilteredHistoricalPointRecords = (year) => {
+    const selectedCounty = getSelectedHistoricalCounty();
+    const countyKey = selectedCounty ? selectedCounty.toLowerCase() : "";
+    const selectedUtility = getSelectedHistoricalUtility();
+    const dayActive = weatherDayFilterActive;
+    const currentDate = dayActive ? getWeatherDisplayDate() : null;
+    const byDataset = {};
+
+    Object.keys(HISTORICAL_DATASETS).forEach((key) => {
+      let records = (historicalDatasetRecords[key] || []).filter((record) => record.year === year);
+      if (key === "epss" && countyKey) {
+        records = records.filter(
           (record) => String(record.county || "").trim().toLowerCase() === countyKey
         );
       }
+      if (key === "cpuc" && selectedUtility) {
+        records = records.filter(
+          (record) => String(record.utility || "").trim() === selectedUtility
+        );
+      }
+      if (dayActive && currentDate) {
+        records = records.filter((record) => recordVisibleOnDay(key, record, currentDate));
+      }
+      byDataset[key] = records;
+    });
+
+    return byDataset;
+  };
+
+  const getFilteredPspsFeatures = (year) => {
+    const selectedUtility = getSelectedHistoricalUtility();
+    const dayActive = weatherDayFilterActive;
+    const currentDate = dayActive ? getWeatherDisplayDate() : null;
+    const features = historicalPspsGeoJson?.features || [];
+
+    return features.filter((feature) => {
+      if (Number(feature.properties?.year) !== year) return false;
+      if (selectedUtility && String(feature.properties?.IOU || "").trim() !== selectedUtility) {
+        return false;
+      }
+      if (dayActive && currentDate && !pspsFeatureVisibleOnDay(feature, currentDate)) {
+        return false;
+      }
+      return true;
+    });
+  };
+
+  const renderHistoricalMapAndChart = (year) => {
+    const filteredByDataset = getFilteredHistoricalPointRecords(year);
+    const countsByDataset = {};
+
+    Object.entries(HISTORICAL_DATASETS).forEach(([key, config]) => {
+      const yearRecords = filteredByDataset[key] || [];
       countsByDataset[key] = yearRecords.length;
 
       if (!historicalMapInstance) return;
@@ -710,10 +891,10 @@
 
       yearRecords.forEach((record) => {
         const marker = L.circleMarker([record.lat, record.lon], {
-          radius: 6,
+          radius: config.bubbleByAcres ? calfireBubbleRadius(record) : 6,
           color: config.color,
           fillColor: config.color,
-          fillOpacity: 0.75,
+          fillOpacity: config.bubbleByAcres ? 0.45 : 0.75,
           weight: 1.5
         });
         marker.bindPopup(buildHistoricalPointPopupHtml(key, config, record), { maxWidth: 320 });
@@ -724,21 +905,80 @@
     if (historicalPspsLayer) {
       historicalPspsLayer.clearLayers();
       if (historicalActiveLayers.has(PSPS_EVENTS_LAYER.key) && historicalPspsGeoJson) {
-        const yearFeatures = {
+        historicalPspsLayer.addData({
           type: "FeatureCollection",
-          features: (historicalPspsGeoJson.features || []).filter((feature) => {
-            if (Number(feature.properties?.year) !== year) return false;
-            if (!selectedUtility) return true;
-            return String(feature.properties?.IOU || "").trim() === selectedUtility;
-          })
-        };
-        historicalPspsLayer.addData(yearFeatures);
+          features: getFilteredPspsFeatures(year)
+        });
         historicalPspsLayer.bringToBack();
       }
     }
 
     renderHistoricalChart(countsByDataset, year);
     drawWeatherContours();
+  };
+
+  const csvEscapeCell = (value) => {
+    if (value === undefined || value === null) return "";
+    const str = String(value);
+    if (/[",\n\r]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
+    return str;
+  };
+
+  const downloadVisibleHistoricalData = () => {
+    const year = getCurrentHistoricalYear();
+    const filteredByDataset = getFilteredHistoricalPointRecords(year);
+    const columns = [
+      "dataset",
+      "lat",
+      "lon",
+      "year",
+      "date",
+      "end_date",
+      "name",
+      "time",
+      "county",
+      "circuit",
+      "cause",
+      "outage_type",
+      "division",
+      "customer_minutes",
+      "restoration_min",
+      "medical_baseline",
+      "life_support",
+      "schools",
+      "hospitals"
+    ];
+
+    const rows = [columns.join(",")];
+    Object.entries(HISTORICAL_DATASETS).forEach(([key, config]) => {
+      if (!historicalActiveLayers.has(key)) return;
+      (filteredByDataset[key] || []).forEach((record) => {
+        rows.push(
+          columns
+            .map((col) => {
+              if (col === "dataset") return csvEscapeCell(config.chartShortLabel || config.label);
+              return csvEscapeCell(record[col]);
+            })
+            .join(",")
+        );
+      });
+    });
+
+    const dayActive = weatherDayFilterActive;
+    const dayStr = dayActive ? getWeatherDisplayDate() : null;
+    const filename = dayStr
+      ? `wildfire-outage-${year}-${dayStr}.csv`
+      : `wildfire-outage-${year}.csv`;
+
+    const blob = new Blob([`${rows.join("\n")}\n`], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const initHistoricalMapAndChart = async () => {
@@ -778,6 +1018,12 @@
           });
           renderHistoricalMapAndChart(getCurrentHistoricalYear());
         });
+      });
+    }
+
+    if (historicalDownloadDataBtn) {
+      historicalDownloadDataBtn.addEventListener("click", () => {
+        downloadVisibleHistoricalData();
       });
     }
 
@@ -1124,7 +1370,13 @@
       if (nDays > 0) {
         weatherAnimDayT += (elapsed / WEATHER_DAY_DURATION_MS) * weatherAnimSpeed;
         while (weatherAnimDayT >= nDays) weatherAnimDayT -= nDays;
-        drawWeatherContours();
+        const dayIndex = Math.floor(weatherAnimDayT) % nDays;
+        if (weatherDayFilterActive && dayIndex !== weatherLastSyncedDayIndex) {
+          weatherLastSyncedDayIndex = dayIndex;
+          renderHistoricalMapAndChart(getCurrentHistoricalYear());
+        } else {
+          drawWeatherContours();
+        }
       }
     }
 
@@ -1149,6 +1401,8 @@
     if (!weatherAnimData || weatherAnimLoading) return;
     if (weatherAnimPlaying) return;
     stopHistoricalYearPlayback();
+    weatherDayFilterActive = true;
+    weatherLastSyncedDayIndex = getWeatherIntegerDayIndex();
     weatherAnimPlaying = true;
     weatherAnimLastFrameMs = null;
     if (weatherPlayBtn) {
@@ -1156,6 +1410,7 @@
       weatherPlayBtn.setAttribute("aria-pressed", "true");
       weatherPlayBtn.setAttribute("aria-label", "Pause fire-weather animation");
     }
+    renderHistoricalMapAndChart(getCurrentHistoricalYear());
     weatherAnimRafId = requestAnimationFrame(tickWeatherAnim);
   };
 
@@ -1183,6 +1438,8 @@
     if (!weatherPlayBtn) return;
     const loadToken = ++weatherAnimLoadToken;
     pauseWeatherAnim();
+    weatherDayFilterActive = false;
+    weatherLastSyncedDayIndex = null;
     weatherAnimYear = year;
     weatherAnimDayT = 0;
     weatherAnimData = null;
@@ -1244,7 +1501,9 @@
           if (!weatherAnimData) return;
           const day = Number(weatherScrub.value) || 0;
           weatherAnimDayT = day;
-          drawWeatherContours();
+          weatherDayFilterActive = true;
+          weatherLastSyncedDayIndex = day;
+          renderHistoricalMapAndChart(getCurrentHistoricalYear());
         });
       }
 
