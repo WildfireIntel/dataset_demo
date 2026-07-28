@@ -210,6 +210,7 @@
       chartShortLabel: "EPSS",
       color: "#1d6fa5", // var(--sfps-blue)
       dataUrl: `${basePath}/assets/data/epss_outages.csv`,
+      cluster: false,
       sampleData: [
         { lat: 39.9,  lon: -121.0,  year: 2020, name: "Plumas circuit de-energized" },
         { lat: 38.45, lon: -122.71, year: 2020, name: "Napa circuit fast-trip" },
@@ -241,23 +242,27 @@
   const PSPS_EVENTS_LAYER = {
     key: "pspsEvents",
     label: "PSPS Event Areas",
-    color: "#7c3aed", // var(--sfps-mr)
+    color: "#1d6fa5", // var(--sfps-blue)
     dataUrl: `${basePath}/assets/data/psps_events.geojson`,
     style: {
-      color: "#7c3aed",
+      color: "#1d6fa5",
       weight: 1.5,
       opacity: 0.9,
-      fillColor: "#7c3aed",
+      fillColor: "#1d6fa5",
       fillOpacity: 0.25
     },
     highlightStyle: {
-      color: "#5b21b6",
+      color: "#155a85",
       weight: 2.5,
       opacity: 1,
-      fillColor: "#7c3aed",
+      fillColor: "#1d6fa5",
       fillOpacity: 0.45
     }
   };
+
+  const EPSS_CIRCUITS_URL = `${basePath}/assets/data/epss_circuits.geojson`;
+  const IOU_TERRITORIES_URL = `${basePath}/assets/data/iou_territories.geojson`;
+  const STATEWIDE_MAP_VIEW = { center: [37.6, -120.8], zoom: 6 };
 
   const FIRE_WEATHER_LAYER = {
     key: "fireWeather",
@@ -286,6 +291,9 @@
   let historicalMapChartInitialized = false;
   let historicalPspsGeoJson = null;
   let historicalPspsLayer = null;
+  let epssCircuitsById = null;
+  let historicalIouTerritoriesGeoJson = null;
+  let historicalIouTerritoryLayer = null;
   let historicalWeatherLayer = null;
   let historicalYearPlayTimer = null;
 
@@ -363,18 +371,23 @@
             return Boolean(row.date);
           });
         console.log(`CAL FIRE: ${records.length} rows after CA bounds + 2020-2025 filters`);
+        if (records.length === 0) {
+          console.warn("CAL FIRE: 0 rows loaded after filtering");
+        }
         return records;
       }
 
       return rows
         .map((row) => {
           const utility = String(row.utility || "").trim();
+          const circuitId = String(row.circuit_id || "").trim().padStart(9, "0");
           return {
             ...row,
             lat: Number(row.lat),
             lon: Number(row.lon),
             year: Number(row.year),
             utility,
+            circuit_id: circuitId,
             name: utility
               ? `${utility} Ignition`
               : row.name || row.description || config.label
@@ -382,6 +395,11 @@
         })
         .filter((row) => Number.isFinite(row.lat) && Number.isFinite(row.lon) && Number.isFinite(row.year));
     } catch (error) {
+      if (key === "calfire") {
+        console.warn(`CAL FIRE: failed to load ${config.dataUrl}:`, error);
+        console.warn("CAL FIRE: 0 rows loaded (no sample fallback)");
+        return [];
+      }
       // Fall back to placeholder data if the real CSV isn't available yet.
       return config.sampleData || [];
     }
@@ -394,6 +412,36 @@
       historicalPspsGeoJson = await response.json();
     } catch (error) {
       historicalPspsGeoJson = { type: "FeatureCollection", features: [] };
+    }
+  };
+
+  const loadEpssCircuits = async () => {
+    try {
+      const response = await fetch(EPSS_CIRCUITS_URL);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const geojson = await response.json();
+      epssCircuitsById = new Map();
+      (geojson.features || []).forEach((feature) => {
+        const circuitId = String(feature.properties?.circuit_id || "")
+          .trim()
+          .padStart(9, "0");
+        if (circuitId) epssCircuitsById.set(circuitId, feature);
+      });
+      console.log(`EPSS circuits: ${epssCircuitsById.size} geometries loaded`);
+    } catch (error) {
+      console.warn(`EPSS circuits: failed to load ${EPSS_CIRCUITS_URL}:`, error);
+      epssCircuitsById = new Map();
+    }
+  };
+
+  const loadIouTerritories = async () => {
+    try {
+      const response = await fetch(IOU_TERRITORIES_URL);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      historicalIouTerritoriesGeoJson = await response.json();
+    } catch (error) {
+      console.warn(`IOU territories: failed to load ${IOU_TERRITORIES_URL}:`, error);
+      historicalIouTerritoriesGeoJson = { type: "FeatureCollection", features: [] };
     }
   };
 
@@ -494,6 +542,119 @@
     return buildHistoricalPopupTableHtml(title, config.color, rows);
   };
 
+  const normalizeEpssCircuitId = (value) => String(value || "").trim().padStart(9, "0");
+
+  const aggregateEpssRecordsByCircuit = (records) => {
+    const byCircuit = new Map();
+    records.forEach((record) => {
+      const circuitId = normalizeEpssCircuitId(record.circuit_id);
+      if (!circuitId) return;
+      if (!byCircuit.has(circuitId)) byCircuit.set(circuitId, []);
+      byCircuit.get(circuitId).push(record);
+    });
+    return byCircuit;
+  };
+
+  const buildEpssCircuitPopupHtml = (config, circuitProps, records) => {
+    const count = records.length;
+    const props = circuitProps || {};
+    const title = props.circuit_name || records[0]?.circuit || config.label;
+    const rowDefs = [
+      ["Circuit ID", "_text", props.circuit_id],
+      ["Division", "_text", props.division],
+      ["Substation", "_text", props.substation],
+      ["Events (filtered)", "_text", count]
+    ];
+
+    if (count > 1) {
+      const dates = records.map((record) => record.date).filter(Boolean).sort();
+      if (dates.length) {
+        const range =
+          dates[0] === dates[dates.length - 1]
+            ? dates[0]
+            : `${dates[0]} – ${dates[dates.length - 1]}`;
+        rowDefs.push(["Date range", "_text", range]);
+      }
+    } else if (count === 1) {
+      const record = records[0];
+      rowDefs.push(
+        ["County", "county", record.county],
+        ["Date", "date", record.date],
+        ["Cause", "cause", record.cause],
+        ["Outage Type", "outage_type", record.outage_type],
+        ["Customer Minutes", "customer_minutes", record.customer_minutes],
+        ["Restoration (min)", "restoration_min", record.restoration_min],
+        ["Medical Baseline", "medical_baseline", record.medical_baseline],
+        ["Life Support", "life_support", record.life_support],
+        ["Schools", "schools", record.schools],
+        ["Hospitals", "hospitals", record.hospitals]
+      );
+    }
+
+    const rows = rowDefs
+      .filter(([, fieldKey, value]) => !isHistoricalPointPopupValueEmpty(fieldKey, value))
+      .map(([label, fieldKey, value]) => [
+        label,
+        fieldKey === "_text" ? String(value) : formatHistoricalPointPopupValue(fieldKey, value)
+      ]);
+
+    return buildHistoricalPopupTableHtml(title, config.color, rows);
+  };
+
+  const renderEpssCircuitLayers = (group, yearRecords, config) => {
+    const byCircuit = aggregateEpssRecordsByCircuit(yearRecords);
+    byCircuit.forEach((records, circuitId) => {
+      const feature = epssCircuitsById?.get(circuitId);
+      if (!feature) return;
+
+      const count = records.length;
+      const props = feature.properties || {};
+      const circuitName = props.circuit_name || records[0]?.circuit || circuitId;
+      const layer = L.geoJSON(feature, {
+        style: {
+          color: config.color,
+          weight: 3,
+          opacity: 0.95,
+          fill: false
+        }
+      });
+
+      layer.bindTooltip(`${circuitName}<br>${count} event${count === 1 ? "" : "s"}`, {
+        sticky: true
+      });
+      layer.bindPopup(buildEpssCircuitPopupHtml(config, props, records), { maxWidth: 320 });
+      layer.addTo(group);
+    });
+  };
+
+  const updateHistoricalUtilityTerritoryView = () => {
+    if (!historicalMapInstance || !historicalIouTerritoryLayer) return;
+
+    historicalIouTerritoryLayer.clearLayers();
+    const selectedUtility = getSelectedHistoricalUtility();
+
+    if (!selectedUtility) {
+      historicalMapInstance.setView(STATEWIDE_MAP_VIEW.center, STATEWIDE_MAP_VIEW.zoom);
+      return;
+    }
+
+    const features = (historicalIouTerritoriesGeoJson?.features || []).filter(
+      (feature) => String(feature.properties?.utility || "").trim() === selectedUtility
+    );
+    if (!features.length) return;
+
+    historicalIouTerritoryLayer.addData({
+      type: "FeatureCollection",
+      features
+    });
+    historicalIouTerritoryLayer.bringToBack();
+
+    const bounds = historicalIouTerritoryLayer.getBounds();
+    if (bounds.isValid()) {
+      historicalMapInstance.fitBounds(bounds, { padding: [24, 24] });
+    }
+  };
+
   const buildPspsPopupHtml = (properties) => {
     const p = properties || {};
     const rows = [
@@ -504,7 +665,7 @@
       ["Full Restoration Date", formatPspsPopupValue(p.FullRestorationDate)],
       ["Customers De-energized", formatPspsPopupValue(p.CustomerDeEnergized)]
     ];
-    return buildHistoricalPopupTableHtml(PSPS_EVENTS_LAYER.label, "#7c3aed", rows);
+    return buildHistoricalPopupTableHtml(PSPS_EVENTS_LAYER.label, PSPS_EVENTS_LAYER.color, rows);
   };
 
   const appendHistoricalLayerToggle = (key, config) => {
@@ -575,7 +736,7 @@
     if (!historicalMapEl || typeof L === "undefined" || historicalMapInstance) return;
     historicalMapInstance = L.map(historicalMapEl, {
       scrollWheelZoom: false
-    }).setView([37.6, -120.8], 6);
+    }).setView(STATEWIDE_MAP_VIEW.center, STATEWIDE_MAP_VIEW.zoom);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
@@ -592,6 +753,18 @@
           weight: 0,
           opacity: 0
         };
+      },
+      interactive: false
+    }).addTo(historicalMapInstance);
+
+    historicalIouTerritoryLayer = L.geoJSON(null, {
+      style: {
+        color: "#334155",
+        weight: 2,
+        opacity: 0.85,
+        fillColor: "#94a3b8",
+        fillOpacity: 0.08,
+        dashArray: "6 4"
       },
       interactive: false
     }).addTo(historicalMapInstance);
@@ -902,6 +1075,11 @@
 
       if (!historicalActiveLayers.has(key)) return;
 
+      if (key === "epss") {
+        renderEpssCircuitLayers(group, yearRecords, config);
+        return;
+      }
+
       yearRecords.forEach((record) => {
         const marker = L.circleMarker([record.lat, record.lon], {
           radius: config.bubbleByAcres ? calfireBubbleRadius(record) : 6,
@@ -928,6 +1106,7 @@
 
     renderHistoricalChart(countsByDataset, year);
     drawWeatherContours();
+    updateHistoricalUtilityTerritoryView();
   };
 
   const csvEscapeCell = (value) => {
@@ -1002,7 +1181,9 @@
     const keys = Object.keys(HISTORICAL_DATASETS);
     const [pointResults] = await Promise.all([
       Promise.all(keys.map((key) => loadHistoricalDatasetRecords(key))),
-      loadHistoricalPspsEvents()
+      loadHistoricalPspsEvents(),
+      loadEpssCircuits(),
+      loadIouTerritories()
     ]);
     keys.forEach((key, idx) => {
       historicalDatasetRecords[key] = pointResults[idx];
