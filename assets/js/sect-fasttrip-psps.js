@@ -350,7 +350,8 @@
               county: String(row.incident_county || "").trim(),
               acres,
               containment,
-              incident_type: String(row.incident_type || "").trim()
+              incident_type: String(row.incident_type || "").trim(),
+              utility: String(row.utility || "").trim()
             };
           })
           .filter((row) => {
@@ -471,6 +472,7 @@
     } else if (key === "calfire") {
       rowDefs = [
         ["County", "county", record.county],
+        ["Utility", "utility", record.utility],
         ["Acres burned", "acres", record.acres],
         ["Containment", "containment", record.containment],
         ["Date", "date", record.date],
@@ -681,8 +683,11 @@
     const fromCpuc = (historicalDatasetRecords.cpuc || [])
       .map((record) => String(record.utility || "").trim())
       .filter(Boolean);
-    const utilities = Array.from(new Set([...fromPsps, ...fromCpuc])).sort((a, b) =>
-      a.localeCompare(b)
+    const fromCalfire = (historicalDatasetRecords.calfire || [])
+      .map((record) => String(record.utility || "").trim())
+      .filter(Boolean);
+    const utilities = Array.from(new Set([...fromPsps, ...fromCpuc, ...fromCalfire])).sort(
+      (a, b) => a.localeCompare(b)
     );
     historicalUtilityFilter.innerHTML = "";
     const allOption = document.createElement("option");
@@ -841,7 +846,15 @@
           (record) => String(record.county || "").trim().toLowerCase() === countyKey
         );
       }
+      if (key === "epss" && selectedUtility && selectedUtility !== "PGE") {
+        records = [];
+      }
       if (key === "cpuc" && selectedUtility) {
+        records = records.filter(
+          (record) => String(record.utility || "").trim() === selectedUtility
+        );
+      }
+      if (key === "calfire" && selectedUtility) {
         records = records.filter(
           (record) => String(record.utility || "").trim() === selectedUtility
         );

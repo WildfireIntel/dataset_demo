@@ -24,11 +24,22 @@ jobs:
         with:
           ref: main
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tagging dependencies
+        run: pip install pandas geopandas
+
       - name: Download CAL FIRE incidents CSV
         run: |
           curl -fsSL \
             -o assets/data/calfire_incidents.csv \
             "https://incidents.fire.ca.gov/imapdata/mapdataall.csv"
+
+      - name: Tag incidents with IOU utility
+        run: python scripts/tag_calfire_utility.py
 
       - name: Commit and push if changed
         run: |
