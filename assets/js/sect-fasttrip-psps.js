@@ -262,7 +262,9 @@
 
   const EPSS_CIRCUITS_URL = `${basePath}/assets/data/epss_circuits.geojson`;
   const IOU_TERRITORIES_URL = `${basePath}/assets/data/iou_territories.geojson`;
+  const PSPS_EVENT_CIRCUITS_URL = `${basePath}/assets/data/psps_event_circuits.json`;
   const STATEWIDE_MAP_VIEW = { center: [37.6, -120.8], zoom: 6 };
+  const PSPS_CIRCUITS_POPUP_PREVIEW = 6;
 
   const FIRE_WEATHER_LAYER = {
     key: "fireWeather",
@@ -291,6 +293,7 @@
   let historicalMapChartInitialized = false;
   let historicalPspsGeoJson = null;
   let historicalPspsLayer = null;
+  let pspsEventCircuitsByName = null;
   let epssCircuitsById = null;
   let historicalIouTerritoriesGeoJson = null;
   let historicalIouTerritoryLayer = null;
@@ -442,6 +445,21 @@
     } catch (error) {
       console.warn(`IOU territories: failed to load ${IOU_TERRITORIES_URL}:`, error);
       historicalIouTerritoriesGeoJson = { type: "FeatureCollection", features: [] };
+    }
+  };
+
+  const loadPspsEventCircuits = async () => {
+    try {
+      const response = await fetch(PSPS_EVENT_CIRCUITS_URL);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      pspsEventCircuitsByName = data && typeof data === "object" ? data : {};
+      console.log(
+        `PSPS event circuits: ${Object.keys(pspsEventCircuitsByName).length} PG&E events mapped`
+      );
+    } catch (error) {
+      console.warn(`PSPS event circuits: failed to load ${PSPS_EVENT_CIRCUITS_URL}:`, error);
+      pspsEventCircuitsByName = {};
     }
   };
 
@@ -601,29 +619,121 @@
     return buildHistoricalPopupTableHtml(title, config.color, rows);
   };
 
+  const epssCoordIsFinite = (coord) =>
+    Array.isArray(coord) &&
+    Number.isFinite(Number(coord[0])) &&
+    Number.isFinite(Number(coord[1]));
+
+  const sanitizeEpssCircuitFeature = (feature, circuitId) => {
+    const geom = feature?.geometry;
+    if (!geom || !geom.type || !geom.coordinates) {
+      console.warn(`EPSS circuit ${circuitId}: missing geometry, skipping`);
+      return null;
+    }
+
+    const stripDegenerateLine = (line) => {
+      if (!Array.isArray(line)) return null;
+      const cleaned = line.filter(epssCoordIsFinite);
+      if (cleaned.length < 2) return null;
+      // Drop zero-length / collapsed segments (identical consecutive points only).
+      const deduped = [];
+      cleaned.forEach((pt) => {
+        const prev = deduped[deduped.length - 1];
+        if (!prev || prev[0] !== pt[0] || prev[1] !== pt[1]) deduped.push(pt);
+      });
+      return deduped.length >= 2 ? deduped : null;
+    };
+
+    let coordinates;
+    let type = geom.type;
+    if (type === "LineString") {
+      const line = stripDegenerateLine(geom.coordinates);
+      if (!line) {
+        console.warn(`EPSS circuit ${circuitId}: degenerate LineString, skipping`);
+        return null;
+      }
+      coordinates = line;
+    } else if (type === "MultiLineString") {
+      const lines = (geom.coordinates || []).map(stripDegenerateLine).filter(Boolean);
+      if (!lines.length) {
+        console.warn(`EPSS circuit ${circuitId}: all MultiLineString parts degenerate, skipping`);
+        return null;
+      }
+      if (lines.length === 1) {
+        type = "LineString";
+        coordinates = lines[0];
+      } else {
+        coordinates = lines;
+      }
+    } else {
+      console.warn(`EPSS circuit ${circuitId}: unsupported geometry type ${type}, skipping`);
+      return null;
+    }
+
+    return {
+      type: "Feature",
+      properties: feature.properties || {},
+      geometry: { type, coordinates }
+    };
+  };
+
+  const epssLayerBoundsAreValid = (layer) => {
+    try {
+      const bounds = layer.getBounds();
+      if (!bounds || !bounds.isValid()) return false;
+      const center = bounds.getCenter();
+      return Number.isFinite(center.lat) && Number.isFinite(center.lng);
+    } catch (error) {
+      return false;
+    }
+  };
+
   const renderEpssCircuitLayers = (group, yearRecords, config) => {
     const byCircuit = aggregateEpssRecordsByCircuit(yearRecords);
     byCircuit.forEach((records, circuitId) => {
       const feature = epssCircuitsById?.get(circuitId);
       if (!feature) return;
 
+      // Drop collapsed/zero-length segments left by simplify pipelines before
+      // handing geometry to Leaflet (avoids NaN bounds/centroids on edge cases).
+      const safeFeature = sanitizeEpssCircuitFeature(feature, circuitId);
+      if (!safeFeature) return;
+
       const count = records.length;
-      const props = feature.properties || {};
+      const props = safeFeature.properties || {};
       const circuitName = props.circuit_name || records[0]?.circuit || circuitId;
-      const layer = L.geoJSON(feature, {
-        style: {
-          color: config.color,
-          weight: 3,
-          opacity: 0.95,
-          fill: false
-        }
-      });
+
+      let layer;
+      try {
+        layer = L.geoJSON(safeFeature, {
+          style: {
+            color: config.color,
+            weight: 3,
+            opacity: 0.95,
+            fill: false
+          }
+        });
+      } catch (error) {
+        console.warn(`EPSS circuit ${circuitId}: Leaflet rejected geometry, skipping`, error);
+        return;
+      }
+
+      if (!epssLayerBoundsAreValid(layer)) {
+        console.warn(
+          `EPSS circuit ${circuitId}: computed bounds/centroid contain NaN, skipping`
+        );
+        return;
+      }
 
       layer.bindTooltip(`${circuitName}<br>${count} event${count === 1 ? "" : "s"}`, {
         sticky: true
       });
       layer.bindPopup(buildEpssCircuitPopupHtml(config, props, records), { maxWidth: 320 });
-      layer.addTo(group);
+      try {
+        layer.addTo(group);
+      } catch (error) {
+        console.warn(`EPSS circuit ${circuitId}: failed to add to map, skipping`, error);
+      }
     });
   };
 
@@ -655,6 +765,27 @@
     }
   };
 
+  const formatPspsAffectedCircuits = (eventName) => {
+    if (!eventName || !pspsEventCircuitsByName) return null;
+    const circuits = pspsEventCircuitsByName[eventName];
+    // PG&E-only mapping by design; omit the row for events with no entry.
+    if (!Array.isArray(circuits) || !circuits.length) return null;
+
+    const labels = circuits.map((circuit) => {
+      const name = String(circuit.circuit_name || "").trim();
+      const id = String(circuit.circuit_id || "").trim();
+      if (name && id) return `${name} (${id})`;
+      return name || id;
+    }).filter(Boolean);
+
+    if (!labels.length) return null;
+
+    const preview = labels.slice(0, PSPS_CIRCUITS_POPUP_PREVIEW);
+    const suffix = labels.length > PSPS_CIRCUITS_POPUP_PREVIEW ? ", …" : "";
+    const noun = labels.length === 1 ? "circuit" : "circuits";
+    return `${labels.length} ${noun}: ${preview.join(", ")}${suffix}`;
+  };
+
   const buildPspsPopupHtml = (properties) => {
     const p = properties || {};
     const rows = [
@@ -665,6 +796,10 @@
       ["Full Restoration Date", formatPspsPopupValue(p.FullRestorationDate)],
       ["Customers De-energized", formatPspsPopupValue(p.CustomerDeEnergized)]
     ];
+    const circuitsText = formatPspsAffectedCircuits(p.EventName);
+    if (circuitsText) {
+      rows.push(["Circuits", circuitsText]);
+    }
     return buildHistoricalPopupTableHtml(PSPS_EVENTS_LAYER.label, PSPS_EVENTS_LAYER.color, rows);
   };
 
@@ -774,7 +909,7 @@
       style: () => PSPS_EVENTS_LAYER.style,
       onEachFeature(feature, layer) {
         const properties = feature.properties || {};
-        layer.bindPopup(buildPspsPopupHtml(properties), { maxWidth: 320 });
+        layer.bindPopup(buildPspsPopupHtml(properties), { maxWidth: 360 });
         layer.on({
           mouseover(e) {
             e.target.setStyle(PSPS_EVENTS_LAYER.highlightStyle);
@@ -1182,6 +1317,7 @@
     const [pointResults] = await Promise.all([
       Promise.all(keys.map((key) => loadHistoricalDatasetRecords(key))),
       loadHistoricalPspsEvents(),
+      loadPspsEventCircuits(),
       loadEpssCircuits(),
       loadIouTerritories()
     ]);

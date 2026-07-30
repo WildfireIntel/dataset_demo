@@ -1,0 +1,1902 @@
+{
+ "PGE PSPS Event 10/11/21":[
+  {
+   "circuit_id":"012022212",
+   "circuit_name":"CLAYTON 2212"
+  },
+  {
+   "circuit_id":"013232105",
+   "circuit_name":"LONE TREE 2105"
+  },
+  {
+   "circuit_id":"013751102",
+   "circuit_name":"VASCO 1102"
+  },
+  {
+   "circuit_id":"014592105",
+   "circuit_name":"BRENTWOOD 2105"
+  },
+  {
+   "circuit_id":"014592110",
+   "circuit_name":"BRENTWOOD 2110"
+  },
+  {
+   "circuit_id":"014662104",
+   "circuit_name":"TASSAJARA 2104"
+  },
+  {
+   "circuit_id":"014662112",
+   "circuit_name":"TASSAJARA 2112"
+  },
+  {
+   "circuit_id":"042711101",
+   "circuit_name":"CALISTOGA 1101"
+  },
+  {
+   "circuit_id":"042821102",
+   "circuit_name":"CLOVERDALE 1102"
+  },
+  {
+   "circuit_id":"042891102",
+   "circuit_name":"GEYSERVILLE 1102"
+  },
+  {
+   "circuit_id":"043051101",
+   "circuit_name":"MONTICELLO 1101"
+  },
+  {
+   "circuit_id":"043141101",
+   "circuit_name":"MIDDLETOWN 1101"
+  },
+  {
+   "circuit_id":"043141102",
+   "circuit_name":"MIDDLETOWN 1102"
+  },
+  {
+   "circuit_id":"043141103",
+   "circuit_name":"MIDDLETOWN 1103"
+  },
+  {
+   "circuit_id":"043191101",
+   "circuit_name":"REDBUD 1101"
+  },
+  {
+   "circuit_id":"043291104",
+   "circuit_name":"PUEBLO 1104"
+  },
+  {
+   "circuit_id":"043291105",
+   "circuit_name":"PUEBLO 1105"
+  },
+  {
+   "circuit_id":"043311102",
+   "circuit_name":"KONOCTI 1102"
+  },
+  {
+   "circuit_id":"043361102",
+   "circuit_name":"HIGHLANDS 1102"
+  },
+  {
+   "circuit_id":"043361103",
+   "circuit_name":"HIGHLANDS 1103"
+  },
+  {
+   "circuit_id":"043432102",
+   "circuit_name":"SILVERADO 2102"
+  },
+  {
+   "circuit_id":"043432104",
+   "circuit_name":"SILVERADO 2104"
+  },
+  {
+   "circuit_id":"062081101",
+   "circuit_name":"ARBUCKLE 1101"
+  },
+  {
+   "circuit_id":"062131109",
+   "circuit_name":"SUISUN 1109"
+  },
+  {
+   "circuit_id":"062881105",
+   "circuit_name":"MAXWELL 1105"
+  },
+  {
+   "circuit_id":"063121101",
+   "circuit_name":"CORTINA 1101"
+  },
+  {
+   "circuit_id":"063171105",
+   "circuit_name":"MADISON 1105"
+  },
+  {
+   "circuit_id":"063172101",
+   "circuit_name":"MADISON 2101"
+  },
+  {
+   "circuit_id":"063591101",
+   "circuit_name":"VACA DIXON 1101"
+  },
+  {
+   "circuit_id":"063591103",
+   "circuit_name":"VACA DIXON 1103"
+  },
+  {
+   "circuit_id":"063591105",
+   "circuit_name":"VACA DIXON 1105"
+  },
+  {
+   "circuit_id":"063601102",
+   "circuit_name":"VACAVILLE 1102"
+  },
+  {
+   "circuit_id":"063601104",
+   "circuit_name":"VACAVILLE 1104"
+  },
+  {
+   "circuit_id":"063601108",
+   "circuit_name":"VACAVILLE 1108"
+  },
+  {
+   "circuit_id":"063601111",
+   "circuit_name":"VACAVILLE 1111"
+  },
+  {
+   "circuit_id":"063601112",
+   "circuit_name":"VACAVILLE 1112"
+  },
+  {
+   "circuit_id":"063681102",
+   "circuit_name":"PUTAH CREEK 1102"
+  },
+  {
+   "circuit_id":"063681103",
+   "circuit_name":"PUTAH CREEK 1103"
+  },
+  {
+   "circuit_id":"063681105",
+   "circuit_name":"PUTAH CREEK 1105"
+  },
+  {
+   "circuit_id":"063801105",
+   "circuit_name":"JAMESON 1105"
+  },
+  {
+   "circuit_id":"063811103",
+   "circuit_name":"DUNNIGAN 1103"
+  },
+  {
+   "circuit_id":"102211103",
+   "circuit_name":"BUCKS CREEK 1103"
+  },
+  {
+   "circuit_id":"102541101",
+   "circuit_name":"VOLTA 1101"
+  },
+  {
+   "circuit_id":"102601101",
+   "circuit_name":"GLENN 1101"
+  },
+  {
+   "circuit_id":"102781101",
+   "circuit_name":"ELK CREEK 1101"
+  },
+  {
+   "circuit_id":"102831104",
+   "circuit_name":"PARADISE 1104"
+  },
+  {
+   "circuit_id":"102841106",
+   "circuit_name":"ANITA 1106"
+  },
+  {
+   "circuit_id":"102931103",
+   "circuit_name":"COTTONWOOD 1103"
+  },
+  {
+   "circuit_id":"102971111",
+   "circuit_name":"SYCAMORE CREEK 1111"
+  },
+  {
+   "circuit_id":"103091102",
+   "circuit_name":"CLARK ROAD 1102"
+  },
+  {
+   "circuit_id":"103142102",
+   "circuit_name":"LOGAN CREEK 2102"
+  },
+  {
+   "circuit_id":"103221101",
+   "circuit_name":"KANAKA 1101"
+  },
+  {
+   "circuit_id":"103261103",
+   "circuit_name":"ANDERSON 1103"
+  },
+  {
+   "circuit_id":"103331101",
+   "circuit_name":"CORNING 1101"
+  },
+  {
+   "circuit_id":"103331102",
+   "circuit_name":"CORNING 1102"
+  },
+  {
+   "circuit_id":"103351101",
+   "circuit_name":"DESCHUTES 1101"
+  },
+  {
+   "circuit_id":"103351104",
+   "circuit_name":"DESCHUTES 1104"
+  },
+  {
+   "circuit_id":"103401101",
+   "circuit_name":"GIRVAN 1101"
+  },
+  {
+   "circuit_id":"103401102",
+   "circuit_name":"GIRVAN 1102"
+  },
+  {
+   "circuit_id":"103441101",
+   "circuit_name":"JESSUP 1101"
+  },
+  {
+   "circuit_id":"103441102",
+   "circuit_name":"JESSUP 1102"
+  },
+  {
+   "circuit_id":"103461101",
+   "circuit_name":"PANORAMA 1101"
+  },
+  {
+   "circuit_id":"103461102",
+   "circuit_name":"PANORAMA 1102"
+  },
+  {
+   "circuit_id":"103481101",
+   "circuit_name":"LOS MOLINOS 1101"
+  },
+  {
+   "circuit_id":"103541101",
+   "circuit_name":"RED BLUFF 1101"
+  },
+  {
+   "circuit_id":"103541103",
+   "circuit_name":"RED BLUFF 1103"
+  },
+  {
+   "circuit_id":"103541104",
+   "circuit_name":"RED BLUFF 1104"
+  },
+  {
+   "circuit_id":"103541105",
+   "circuit_name":"RED BLUFF 1105"
+  },
+  {
+   "circuit_id":"103571105",
+   "circuit_name":"TYLER 1105"
+  },
+  {
+   "circuit_id":"103751101",
+   "circuit_name":"BIG BEND 1101"
+  },
+  {
+   "circuit_id":"162671103",
+   "circuit_name":"WESTLEY 1103"
+  },
+  {
+   "circuit_id":"163111102",
+   "circuit_name":"GUSTINE 1102"
+  },
+  {
+   "circuit_id":"182031104",
+   "circuit_name":"KING CITY 1104"
+  },
+  {
+   "circuit_id":"182031106",
+   "circuit_name":"KING CITY 1106"
+  },
+  {
+   "circuit_id":"182082101",
+   "circuit_name":"LOS OSITOS 2101"
+  },
+  {
+   "circuit_id":"182191102",
+   "circuit_name":"SAN ARDO 1102"
+  },
+  {
+   "circuit_id":"182391103",
+   "circuit_name":"OILFIELDS 1103"
+  },
+  {
+   "circuit_id":"182561101",
+   "circuit_name":"CHOLAME 1101"
+  },
+  {
+   "circuit_id":"182661106",
+   "circuit_name":"SAN MIGUEL 1106"
+  },
+  {
+   "circuit_id":"182681102",
+   "circuit_name":"ZACA 1102"
+  },
+  {
+   "circuit_id":"182811102",
+   "circuit_name":"SISQUOC 1102"
+  },
+  {
+   "circuit_id":"182981102",
+   "circuit_name":"JOLON 1102"
+  },
+  {
+   "circuit_id":"182981103",
+   "circuit_name":"JOLON 1103"
+  },
+  {
+   "circuit_id":"183052110",
+   "circuit_name":"TEMPLETON 2110"
+  },
+  {
+   "circuit_id":"183052113",
+   "circuit_name":"TEMPLETON 2113"
+  },
+  {
+   "circuit_id":"183071101",
+   "circuit_name":"PERRY 1101"
+  },
+  {
+   "circuit_id":"183071104",
+   "circuit_name":"PERRY 1104"
+  },
+  {
+   "circuit_id":"252021101",
+   "circuit_name":"ANTELOPE 1101"
+  },
+  {
+   "circuit_id":"252161108",
+   "circuit_name":"COALINGA NO 1 1108"
+  },
+  {
+   "circuit_id":"252161109",
+   "circuit_name":"COALINGA NO 1 1109"
+  },
+  {
+   "circuit_id":"252381105",
+   "circuit_name":"COALINGA NO 2 1105"
+  },
+  {
+   "circuit_id":"252732104",
+   "circuit_name":"KETTLEMAN HILLS 2104"
+  },
+  {
+   "circuit_id":"252771108",
+   "circuit_name":"MAGUNDEN 1108"
+  },
+  {
+   "circuit_id":"252931102",
+   "circuit_name":"TEJON 1102"
+  },
+  {
+   "circuit_id":"252931103",
+   "circuit_name":"TEJON 1103"
+  },
+  {
+   "circuit_id":"253451101",
+   "circuit_name":"DEVILS DEN 1101"
+  },
+  {
+   "circuit_id":"253591103",
+   "circuit_name":"CANTUA 1103"
+  },
+  {
+   "circuit_id":"253671103",
+   "circuit_name":"PANOCHE 1103"
+  },
+  {
+   "circuit_id":"253911104",
+   "circuit_name":"LAMONT 1104"
+  },
+  {
+   "circuit_id":"254051104",
+   "circuit_name":"SANTA NELLA 1104"
+  },
+  {
+   "circuit_id":"255002101",
+   "circuit_name":"AVENAL 2101"
+  }
+ ],
+ "PGE PSPS Event 10/14/21":[
+  {
+   "circuit_id":"252771108",
+   "circuit_name":"MAGUNDEN 1108"
+  },
+  {
+   "circuit_id":"252931102",
+   "circuit_name":"TEJON 1102"
+  },
+  {
+   "circuit_id":"252931103",
+   "circuit_name":"TEJON 1103"
+  },
+  {
+   "circuit_id":"253911104",
+   "circuit_name":"LAMONT 1104"
+  },
+  {
+   "circuit_id":"255451102",
+   "circuit_name":"CAL WATER 1102"
+  }
+ ],
+ "PG&E PSPS Event 08/30/23":[
+  {
+   "circuit_id":"043361103",
+   "circuit_name":"HIGHLANDS 1103"
+  },
+  {
+   "circuit_id":"062881105",
+   "circuit_name":"MAXWELL 1105"
+  },
+  {
+   "circuit_id":"063172101",
+   "circuit_name":"MADISON 2101"
+  },
+  {
+   "circuit_id":"102601101",
+   "circuit_name":"GLENN 1101"
+  },
+  {
+   "circuit_id":"102781101",
+   "circuit_name":"ELK CREEK 1101"
+  },
+  {
+   "circuit_id":"102931102",
+   "circuit_name":"COTTONWOOD 1102"
+  },
+  {
+   "circuit_id":"103091102",
+   "circuit_name":"CLARK ROAD 1102"
+  },
+  {
+   "circuit_id":"103142102",
+   "circuit_name":"LOGAN CREEK 2102"
+  },
+  {
+   "circuit_id":"103321101",
+   "circuit_name":"CEDAR CREEK 1101"
+  },
+  {
+   "circuit_id":"103331101",
+   "circuit_name":"CORNING 1101"
+  },
+  {
+   "circuit_id":"103331102",
+   "circuit_name":"CORNING 1102"
+  },
+  {
+   "circuit_id":"103401101",
+   "circuit_name":"GIRVAN 1101"
+  },
+  {
+   "circuit_id":"103441101",
+   "circuit_name":"JESSUP 1101"
+  },
+  {
+   "circuit_id":"103501101",
+   "circuit_name":"PIT NO 7 1101"
+  },
+  {
+   "circuit_id":"103601101",
+   "circuit_name":"WHITMORE 1101"
+  },
+  {
+   "circuit_id":"103751101",
+   "circuit_name":"BIG BEND 1101"
+  }
+ ],
+ "PG&E PSPS Event 09/20/23":[
+  {
+   "circuit_id":"042711101",
+   "circuit_name":"CALISTOGA 1101"
+  },
+  {
+   "circuit_id":"043361103",
+   "circuit_name":"HIGHLANDS 1103"
+  },
+  {
+   "circuit_id":"103331101",
+   "circuit_name":"CORNING 1101"
+  },
+  {
+   "circuit_id":"103331102",
+   "circuit_name":"CORNING 1102"
+  }
+ ],
+ "PG&E PSPS Event 07/02/24":[
+  {
+   "circuit_id":"042711101",
+   "circuit_name":"CALISTOGA 1101"
+  },
+  {
+   "circuit_id":"042891102",
+   "circuit_name":"GEYSERVILLE 1102"
+  },
+  {
+   "circuit_id":"043051101",
+   "circuit_name":"MONTICELLO 1101"
+  },
+  {
+   "circuit_id":"043141101",
+   "circuit_name":"MIDDLETOWN 1101"
+  },
+  {
+   "circuit_id":"043361103",
+   "circuit_name":"HIGHLANDS 1103"
+  },
+  {
+   "circuit_id":"062081101",
+   "circuit_name":"ARBUCKLE 1101"
+  },
+  {
+   "circuit_id":"063121101",
+   "circuit_name":"CORTINA 1101"
+  },
+  {
+   "circuit_id":"063172101",
+   "circuit_name":"MADISON 2101"
+  },
+  {
+   "circuit_id":"063601108",
+   "circuit_name":"VACAVILLE 1108"
+  },
+  {
+   "circuit_id":"063681102",
+   "circuit_name":"PUTAH CREEK 1102"
+  },
+  {
+   "circuit_id":"063681105",
+   "circuit_name":"PUTAH CREEK 1105"
+  },
+  {
+   "circuit_id":"063811103",
+   "circuit_name":"DUNNIGAN 1103"
+  },
+  {
+   "circuit_id":"103091102",
+   "circuit_name":"CLARK ROAD 1102"
+  },
+  {
+   "circuit_id":"103331101",
+   "circuit_name":"CORNING 1101"
+  },
+  {
+   "circuit_id":"103331102",
+   "circuit_name":"CORNING 1102"
+  },
+  {
+   "circuit_id":"103751101",
+   "circuit_name":"BIG BEND 1101"
+  }
+ ],
+ "PG&E PSPS Event 07/20/24":[
+  {
+   "circuit_id":"013751102",
+   "circuit_name":"VASCO 1102"
+  },
+  {
+   "circuit_id":"013751103",
+   "circuit_name":"VASCO 1103"
+  },
+  {
+   "circuit_id":"014402110",
+   "circuit_name":"LAS POSITAS 2110"
+  },
+  {
+   "circuit_id":"014592105",
+   "circuit_name":"BRENTWOOD 2105"
+  },
+  {
+   "circuit_id":"163741102",
+   "circuit_name":"HERDLYN 1102"
+  }
+ ],
+ "PG&E PSPS Event 09/30/24":[
+  {
+   "circuit_id":"101321101",
+   "circuit_name":"PIT NO 5 1101"
+  },
+  {
+   "circuit_id":"102601101",
+   "circuit_name":"GLENN 1101"
+  },
+  {
+   "circuit_id":"102781101",
+   "circuit_name":"ELK CREEK 1101"
+  },
+  {
+   "circuit_id":"102931102",
+   "circuit_name":"COTTONWOOD 1102"
+  },
+  {
+   "circuit_id":"103091102",
+   "circuit_name":"CLARK ROAD 1102"
+  },
+  {
+   "circuit_id":"103142102",
+   "circuit_name":"LOGAN CREEK 2102"
+  },
+  {
+   "circuit_id":"103271101",
+   "circuit_name":"ANTLER 1101"
+  },
+  {
+   "circuit_id":"103321101",
+   "circuit_name":"CEDAR CREEK 1101"
+  },
+  {
+   "circuit_id":"103401101",
+   "circuit_name":"GIRVAN 1101"
+  },
+  {
+   "circuit_id":"103401102",
+   "circuit_name":"GIRVAN 1102"
+  },
+  {
+   "circuit_id":"103441101",
+   "circuit_name":"JESSUP 1101"
+  },
+  {
+   "circuit_id":"103441102",
+   "circuit_name":"JESSUP 1102"
+  },
+  {
+   "circuit_id":"103451101",
+   "circuit_name":"KESWICK 1101"
+  },
+  {
+   "circuit_id":"103521102",
+   "circuit_name":"OREGON TRAIL 1102"
+  },
+  {
+   "circuit_id":"103521103",
+   "circuit_name":"OREGON TRAIL 1103"
+  },
+  {
+   "circuit_id":"103561101",
+   "circuit_name":"STILLWATER 1101"
+  },
+  {
+   "circuit_id":"103561102",
+   "circuit_name":"STILLWATER 1102"
+  },
+  {
+   "circuit_id":"103601101",
+   "circuit_name":"WHITMORE 1101"
+  },
+  {
+   "circuit_id":"103732101",
+   "circuit_name":"PIT NO 3 2101"
+  },
+  {
+   "circuit_id":"103751101",
+   "circuit_name":"BIG BEND 1101"
+  }
+ ],
+ "PG&E PSPS Event 11/05/24":[
+  {
+   "circuit_id":"012022212",
+   "circuit_name":"CLAYTON 2212"
+  },
+  {
+   "circuit_id":"012022213",
+   "circuit_name":"CLAYTON 2213"
+  },
+  {
+   "circuit_id":"012022215",
+   "circuit_name":"CLAYTON 2215"
+  },
+  {
+   "circuit_id":"012041112",
+   "circuit_name":"OAKLAND D 1112"
+  },
+  {
+   "circuit_id":"012101102",
+   "circuit_name":"OAKLAND K 1102"
+  },
+  {
+   "circuit_id":"012101103",
+   "circuit_name":"OAKLAND K 1103"
+  },
+  {
+   "circuit_id":"012101104",
+   "circuit_name":"OAKLAND K 1104"
+  },
+  {
+   "circuit_id":"012501105",
+   "circuit_name":"EL CERRITO G 1105"
+  },
+  {
+   "circuit_id":"012541104",
+   "circuit_name":"OAKLAND X 1104"
+  },
+  {
+   "circuit_id":"012541106",
+   "circuit_name":"OAKLAND X 1106"
+  },
+  {
+   "circuit_id":"013751102",
+   "circuit_name":"VASCO 1102"
+  },
+  {
+   "circuit_id":"013801101",
+   "circuit_name":"MORAGA 1101"
+  },
+  {
+   "circuit_id":"014052103",
+   "circuit_name":"NORTH DUBLIN 2103"
+  },
+  {
+   "circuit_id":"014091108",
+   "circuit_name":"CASTRO VALLEY 1108"
+  },
+  {
+   "circuit_id":"014161108",
+   "circuit_name":"ROSSMOOR 1108"
+  },
+  {
+   "circuit_id":"014161109",
+   "circuit_name":"ROSSMOOR 1109"
+  },
+  {
+   "circuit_id":"014232108",
+   "circuit_name":"SAN RAMON 2108"
+  },
+  {
+   "circuit_id":"014232110",
+   "circuit_name":"SAN RAMON 2110"
+  },
+  {
+   "circuit_id":"014241101",
+   "circuit_name":"SUNOL 1101"
+  },
+  {
+   "circuit_id":"014402108",
+   "circuit_name":"LAS POSITAS 2108"
+  },
+  {
+   "circuit_id":"014422109",
+   "circuit_name":"CAYETANO 2109"
+  },
+  {
+   "circuit_id":"014422111",
+   "circuit_name":"CAYETANO 2111"
+  },
+  {
+   "circuit_id":"014502108",
+   "circuit_name":"VINEYARD 2108"
+  },
+  {
+   "circuit_id":"014652106",
+   "circuit_name":"TIDEWATER 2106"
+  },
+  {
+   "circuit_id":"014662104",
+   "circuit_name":"TASSAJARA 2104"
+  },
+  {
+   "circuit_id":"014662112",
+   "circuit_name":"TASSAJARA 2112"
+  },
+  {
+   "circuit_id":"014662113",
+   "circuit_name":"TASSAJARA 2113"
+  },
+  {
+   "circuit_id":"042021102",
+   "circuit_name":"NAPA 1102"
+  },
+  {
+   "circuit_id":"042021112",
+   "circuit_name":"NAPA 1112"
+  },
+  {
+   "circuit_id":"042561102",
+   "circuit_name":"FULTON 1102"
+  },
+  {
+   "circuit_id":"042711101",
+   "circuit_name":"CALISTOGA 1101"
+  },
+  {
+   "circuit_id":"042711102",
+   "circuit_name":"CALISTOGA 1102"
+  },
+  {
+   "circuit_id":"042721102",
+   "circuit_name":"SONOMA 1102"
+  },
+  {
+   "circuit_id":"042721103",
+   "circuit_name":"SONOMA 1103"
+  },
+  {
+   "circuit_id":"042721104",
+   "circuit_name":"SONOMA 1104"
+  },
+  {
+   "circuit_id":"042721105",
+   "circuit_name":"SONOMA 1105"
+  },
+  {
+   "circuit_id":"042721106",
+   "circuit_name":"SONOMA 1106"
+  },
+  {
+   "circuit_id":"042821102",
+   "circuit_name":"CLOVERDALE 1102"
+  },
+  {
+   "circuit_id":"042891102",
+   "circuit_name":"GEYSERVILLE 1102"
+  },
+  {
+   "circuit_id":"043051101",
+   "circuit_name":"MONTICELLO 1101"
+  },
+  {
+   "circuit_id":"043071101",
+   "circuit_name":"DUNBAR 1101"
+  },
+  {
+   "circuit_id":"043071103",
+   "circuit_name":"DUNBAR 1103"
+  },
+  {
+   "circuit_id":"043141101",
+   "circuit_name":"MIDDLETOWN 1101"
+  },
+  {
+   "circuit_id":"043141102",
+   "circuit_name":"MIDDLETOWN 1102"
+  },
+  {
+   "circuit_id":"043141103",
+   "circuit_name":"MIDDLETOWN 1103"
+  },
+  {
+   "circuit_id":"043191101",
+   "circuit_name":"REDBUD 1101"
+  },
+  {
+   "circuit_id":"043191102",
+   "circuit_name":"REDBUD 1102"
+  },
+  {
+   "circuit_id":"043291104",
+   "circuit_name":"PUEBLO 1104"
+  },
+  {
+   "circuit_id":"043291105",
+   "circuit_name":"PUEBLO 1105"
+  },
+  {
+   "circuit_id":"043292102",
+   "circuit_name":"PUEBLO 2102"
+  },
+  {
+   "circuit_id":"043292103",
+   "circuit_name":"PUEBLO 2103"
+  },
+  {
+   "circuit_id":"043292104",
+   "circuit_name":"PUEBLO 2104"
+  },
+  {
+   "circuit_id":"043321101",
+   "circuit_name":"RINCON 1101"
+  },
+  {
+   "circuit_id":"043321103",
+   "circuit_name":"RINCON 1103"
+  },
+  {
+   "circuit_id":"043361102",
+   "circuit_name":"HIGHLANDS 1102"
+  },
+  {
+   "circuit_id":"043361103",
+   "circuit_name":"HIGHLANDS 1103"
+  },
+  {
+   "circuit_id":"043371102",
+   "circuit_name":"LAKEVILLE 1102"
+  },
+  {
+   "circuit_id":"043432102",
+   "circuit_name":"SILVERADO 2102"
+  },
+  {
+   "circuit_id":"043432103",
+   "circuit_name":"SILVERADO 2103"
+  },
+  {
+   "circuit_id":"043432104",
+   "circuit_name":"SILVERADO 2104"
+  },
+  {
+   "circuit_id":"043432105",
+   "circuit_name":"SILVERADO 2105"
+  },
+  {
+   "circuit_id":"043471101",
+   "circuit_name":"PENNGROVE 1101"
+  },
+  {
+   "circuit_id":"062051102",
+   "circuit_name":"WILLIAMS 1102"
+  },
+  {
+   "circuit_id":"062081101",
+   "circuit_name":"ARBUCKLE 1101"
+  },
+  {
+   "circuit_id":"062701112",
+   "circuit_name":"CORDELIA 1112"
+  },
+  {
+   "circuit_id":"062881102",
+   "circuit_name":"MAXWELL 1102"
+  },
+  {
+   "circuit_id":"062881105",
+   "circuit_name":"MAXWELL 1105"
+  },
+  {
+   "circuit_id":"063121101",
+   "circuit_name":"CORTINA 1101"
+  },
+  {
+   "circuit_id":"063171105",
+   "circuit_name":"MADISON 1105"
+  },
+  {
+   "circuit_id":"063172101",
+   "circuit_name":"MADISON 2101"
+  },
+  {
+   "circuit_id":"063591101",
+   "circuit_name":"VACA DIXON 1101"
+  },
+  {
+   "circuit_id":"063591105",
+   "circuit_name":"VACA DIXON 1105"
+  },
+  {
+   "circuit_id":"063601103",
+   "circuit_name":"VACAVILLE 1103"
+  },
+  {
+   "circuit_id":"063601104",
+   "circuit_name":"VACAVILLE 1104"
+  },
+  {
+   "circuit_id":"063601108",
+   "circuit_name":"VACAVILLE 1108"
+  },
+  {
+   "circuit_id":"063601109",
+   "circuit_name":"VACAVILLE 1109"
+  },
+  {
+   "circuit_id":"063601111",
+   "circuit_name":"VACAVILLE 1111"
+  },
+  {
+   "circuit_id":"063601112",
+   "circuit_name":"VACAVILLE 1112"
+  },
+  {
+   "circuit_id":"063642106",
+   "circuit_name":"PEABODY 2106"
+  },
+  {
+   "circuit_id":"063681102",
+   "circuit_name":"PUTAH CREEK 1102"
+  },
+  {
+   "circuit_id":"063681103",
+   "circuit_name":"PUTAH CREEK 1103"
+  },
+  {
+   "circuit_id":"063681105",
+   "circuit_name":"PUTAH CREEK 1105"
+  },
+  {
+   "circuit_id":"063801102",
+   "circuit_name":"JAMESON 1102"
+  },
+  {
+   "circuit_id":"063801105",
+   "circuit_name":"JAMESON 1105"
+  },
+  {
+   "circuit_id":"063811103",
+   "circuit_name":"DUNNIGAN 1103"
+  },
+  {
+   "circuit_id":"082021106",
+   "circuit_name":"LOS GATOS 1106"
+  },
+  {
+   "circuit_id":"082021107",
+   "circuit_name":"LOS GATOS 1107"
+  },
+  {
+   "circuit_id":"082831108",
+   "circuit_name":"MILPITAS 1108"
+  },
+  {
+   "circuit_id":"082831109",
+   "circuit_name":"MILPITAS 1109"
+  },
+  {
+   "circuit_id":"083242105",
+   "circuit_name":"MORGAN HILL 2105"
+  },
+  {
+   "circuit_id":"083242111",
+   "circuit_name":"MORGAN HILL 2111"
+  },
+  {
+   "circuit_id":"083371107",
+   "circuit_name":"SARATOGA 1107"
+  },
+  {
+   "circuit_id":"083392110",
+   "circuit_name":"SWIFT 2110"
+  },
+  {
+   "circuit_id":"083432101",
+   "circuit_name":"HICKS 2101"
+  },
+  {
+   "circuit_id":"083481110",
+   "circuit_name":"STELLING 1110"
+  },
+  {
+   "circuit_id":"083531111",
+   "circuit_name":"MC KEE 1111"
+  },
+  {
+   "circuit_id":"083692104",
+   "circuit_name":"ROB ROY 2104"
+  },
+  {
+   "circuit_id":"102211103",
+   "circuit_name":"BUCKS CREEK 1103"
+  },
+  {
+   "circuit_id":"102601101",
+   "circuit_name":"GLENN 1101"
+  },
+  {
+   "circuit_id":"102781101",
+   "circuit_name":"ELK CREEK 1101"
+  },
+  {
+   "circuit_id":"103091102",
+   "circuit_name":"CLARK ROAD 1102"
+  },
+  {
+   "circuit_id":"103142102",
+   "circuit_name":"LOGAN CREEK 2102"
+  },
+  {
+   "circuit_id":"103331101",
+   "circuit_name":"CORNING 1101"
+  },
+  {
+   "circuit_id":"103331102",
+   "circuit_name":"CORNING 1102"
+  },
+  {
+   "circuit_id":"103751101",
+   "circuit_name":"BIG BEND 1101"
+  },
+  {
+   "circuit_id":"162671103",
+   "circuit_name":"WESTLEY 1103"
+  },
+  {
+   "circuit_id":"252931102",
+   "circuit_name":"TEJON 1102"
+  },
+  {
+   "circuit_id":"253911104",
+   "circuit_name":"LAMONT 1104"
+  }
+ ],
+ "PG&E PSPS Event 12/09/24":[
+  {
+   "circuit_id":"252931102",
+   "circuit_name":"TEJON 1102"
+  },
+  {
+   "circuit_id":"253911104",
+   "circuit_name":"LAMONT 1104"
+  }
+ ],
+ "PG&E PSPS Event 10/17/24":[
+  {
+   "circuit_id":"012022212",
+   "circuit_name":"CLAYTON 2212"
+  },
+  {
+   "circuit_id":"012022213",
+   "circuit_name":"CLAYTON 2213"
+  },
+  {
+   "circuit_id":"013232105",
+   "circuit_name":"LONE TREE 2105"
+  },
+  {
+   "circuit_id":"013751102",
+   "circuit_name":"VASCO 1102"
+  },
+  {
+   "circuit_id":"014052103",
+   "circuit_name":"NORTH DUBLIN 2103"
+  },
+  {
+   "circuit_id":"014091108",
+   "circuit_name":"CASTRO VALLEY 1108"
+  },
+  {
+   "circuit_id":"014241101",
+   "circuit_name":"SUNOL 1101"
+  },
+  {
+   "circuit_id":"014402108",
+   "circuit_name":"LAS POSITAS 2108"
+  },
+  {
+   "circuit_id":"014422109",
+   "circuit_name":"CAYETANO 2109"
+  },
+  {
+   "circuit_id":"014502108",
+   "circuit_name":"VINEYARD 2108"
+  },
+  {
+   "circuit_id":"014592105",
+   "circuit_name":"BRENTWOOD 2105"
+  },
+  {
+   "circuit_id":"014592110",
+   "circuit_name":"BRENTWOOD 2110"
+  },
+  {
+   "circuit_id":"014652106",
+   "circuit_name":"TIDEWATER 2106"
+  },
+  {
+   "circuit_id":"014662104",
+   "circuit_name":"TASSAJARA 2104"
+  },
+  {
+   "circuit_id":"014662112",
+   "circuit_name":"TASSAJARA 2112"
+  },
+  {
+   "circuit_id":"042021112",
+   "circuit_name":"NAPA 1112"
+  },
+  {
+   "circuit_id":"042711101",
+   "circuit_name":"CALISTOGA 1101"
+  },
+  {
+   "circuit_id":"042711102",
+   "circuit_name":"CALISTOGA 1102"
+  },
+  {
+   "circuit_id":"042721102",
+   "circuit_name":"SONOMA 1102"
+  },
+  {
+   "circuit_id":"042721103",
+   "circuit_name":"SONOMA 1103"
+  },
+  {
+   "circuit_id":"042721104",
+   "circuit_name":"SONOMA 1104"
+  },
+  {
+   "circuit_id":"042721105",
+   "circuit_name":"SONOMA 1105"
+  },
+  {
+   "circuit_id":"042721106",
+   "circuit_name":"SONOMA 1106"
+  },
+  {
+   "circuit_id":"042821102",
+   "circuit_name":"CLOVERDALE 1102"
+  },
+  {
+   "circuit_id":"042891102",
+   "circuit_name":"GEYSERVILLE 1102"
+  },
+  {
+   "circuit_id":"043051101",
+   "circuit_name":"MONTICELLO 1101"
+  },
+  {
+   "circuit_id":"043071101",
+   "circuit_name":"DUNBAR 1101"
+  },
+  {
+   "circuit_id":"043071103",
+   "circuit_name":"DUNBAR 1103"
+  },
+  {
+   "circuit_id":"043141101",
+   "circuit_name":"MIDDLETOWN 1101"
+  },
+  {
+   "circuit_id":"043191101",
+   "circuit_name":"REDBUD 1101"
+  },
+  {
+   "circuit_id":"043191102",
+   "circuit_name":"REDBUD 1102"
+  },
+  {
+   "circuit_id":"043291104",
+   "circuit_name":"PUEBLO 1104"
+  },
+  {
+   "circuit_id":"043291105",
+   "circuit_name":"PUEBLO 1105"
+  },
+  {
+   "circuit_id":"043292102",
+   "circuit_name":"PUEBLO 2102"
+  },
+  {
+   "circuit_id":"043292103",
+   "circuit_name":"PUEBLO 2103"
+  },
+  {
+   "circuit_id":"043321101",
+   "circuit_name":"RINCON 1101"
+  },
+  {
+   "circuit_id":"043321103",
+   "circuit_name":"RINCON 1103"
+  },
+  {
+   "circuit_id":"043361102",
+   "circuit_name":"HIGHLANDS 1102"
+  },
+  {
+   "circuit_id":"043361103",
+   "circuit_name":"HIGHLANDS 1103"
+  },
+  {
+   "circuit_id":"043371102",
+   "circuit_name":"LAKEVILLE 1102"
+  },
+  {
+   "circuit_id":"043432102",
+   "circuit_name":"SILVERADO 2102"
+  },
+  {
+   "circuit_id":"043432103",
+   "circuit_name":"SILVERADO 2103"
+  },
+  {
+   "circuit_id":"043432104",
+   "circuit_name":"SILVERADO 2104"
+  },
+  {
+   "circuit_id":"043432105",
+   "circuit_name":"SILVERADO 2105"
+  },
+  {
+   "circuit_id":"043471101",
+   "circuit_name":"PENNGROVE 1101"
+  },
+  {
+   "circuit_id":"062051102",
+   "circuit_name":"WILLIAMS 1102"
+  },
+  {
+   "circuit_id":"062081101",
+   "circuit_name":"ARBUCKLE 1101"
+  },
+  {
+   "circuit_id":"062881102",
+   "circuit_name":"MAXWELL 1102"
+  },
+  {
+   "circuit_id":"062881105",
+   "circuit_name":"MAXWELL 1105"
+  },
+  {
+   "circuit_id":"063121101",
+   "circuit_name":"CORTINA 1101"
+  },
+  {
+   "circuit_id":"063171105",
+   "circuit_name":"MADISON 1105"
+  },
+  {
+   "circuit_id":"063172101",
+   "circuit_name":"MADISON 2101"
+  },
+  {
+   "circuit_id":"063591101",
+   "circuit_name":"VACA DIXON 1101"
+  },
+  {
+   "circuit_id":"063591105",
+   "circuit_name":"VACA DIXON 1105"
+  },
+  {
+   "circuit_id":"063601103",
+   "circuit_name":"VACAVILLE 1103"
+  },
+  {
+   "circuit_id":"063601104",
+   "circuit_name":"VACAVILLE 1104"
+  },
+  {
+   "circuit_id":"063601108",
+   "circuit_name":"VACAVILLE 1108"
+  },
+  {
+   "circuit_id":"063601109",
+   "circuit_name":"VACAVILLE 1109"
+  },
+  {
+   "circuit_id":"063601111",
+   "circuit_name":"VACAVILLE 1111"
+  },
+  {
+   "circuit_id":"063601112",
+   "circuit_name":"VACAVILLE 1112"
+  },
+  {
+   "circuit_id":"063642106",
+   "circuit_name":"PEABODY 2106"
+  },
+  {
+   "circuit_id":"063681102",
+   "circuit_name":"PUTAH CREEK 1102"
+  },
+  {
+   "circuit_id":"063681103",
+   "circuit_name":"PUTAH CREEK 1103"
+  },
+  {
+   "circuit_id":"063681105",
+   "circuit_name":"PUTAH CREEK 1105"
+  },
+  {
+   "circuit_id":"063801102",
+   "circuit_name":"JAMESON 1102"
+  },
+  {
+   "circuit_id":"063801105",
+   "circuit_name":"JAMESON 1105"
+  },
+  {
+   "circuit_id":"063811103",
+   "circuit_name":"DUNNIGAN 1103"
+  },
+  {
+   "circuit_id":"082021107",
+   "circuit_name":"LOS GATOS 1107"
+  },
+  {
+   "circuit_id":"082831109",
+   "circuit_name":"MILPITAS 1109"
+  },
+  {
+   "circuit_id":"083242105",
+   "circuit_name":"MORGAN HILL 2105"
+  },
+  {
+   "circuit_id":"083242111",
+   "circuit_name":"MORGAN HILL 2111"
+  },
+  {
+   "circuit_id":"083432101",
+   "circuit_name":"HICKS 2101"
+  },
+  {
+   "circuit_id":"083692104",
+   "circuit_name":"ROB ROY 2104"
+  },
+  {
+   "circuit_id":"102211103",
+   "circuit_name":"BUCKS CREEK 1103"
+  },
+  {
+   "circuit_id":"102541101",
+   "circuit_name":"VOLTA 1101"
+  },
+  {
+   "circuit_id":"102601101",
+   "circuit_name":"GLENN 1101"
+  },
+  {
+   "circuit_id":"102781101",
+   "circuit_name":"ELK CREEK 1101"
+  },
+  {
+   "circuit_id":"102831105",
+   "circuit_name":"PARADISE 1105"
+  },
+  {
+   "circuit_id":"103031102",
+   "circuit_name":"ORO FINO 1102"
+  },
+  {
+   "circuit_id":"103142102",
+   "circuit_name":"LOGAN CREEK 2102"
+  },
+  {
+   "circuit_id":"103331101",
+   "circuit_name":"CORNING 1101"
+  },
+  {
+   "circuit_id":"103331102",
+   "circuit_name":"CORNING 1102"
+  },
+  {
+   "circuit_id":"103381101",
+   "circuit_name":"FRENCH GULCH 1101"
+  },
+  {
+   "circuit_id":"103381102",
+   "circuit_name":"FRENCH GULCH 1102"
+  },
+  {
+   "circuit_id":"103401101",
+   "circuit_name":"GIRVAN 1101"
+  },
+  {
+   "circuit_id":"103401102",
+   "circuit_name":"GIRVAN 1102"
+  },
+  {
+   "circuit_id":"103451101",
+   "circuit_name":"KESWICK 1101"
+  },
+  {
+   "circuit_id":"103531103",
+   "circuit_name":"RAWSON 1103"
+  },
+  {
+   "circuit_id":"103541101",
+   "circuit_name":"RED BLUFF 1101"
+  },
+  {
+   "circuit_id":"103541103",
+   "circuit_name":"RED BLUFF 1103"
+  },
+  {
+   "circuit_id":"103541105",
+   "circuit_name":"RED BLUFF 1105"
+  },
+  {
+   "circuit_id":"103561101",
+   "circuit_name":"STILLWATER 1101"
+  },
+  {
+   "circuit_id":"103561102",
+   "circuit_name":"STILLWATER 1102"
+  },
+  {
+   "circuit_id":"103571105",
+   "circuit_name":"TYLER 1105"
+  },
+  {
+   "circuit_id":"103751101",
+   "circuit_name":"BIG BEND 1101"
+  },
+  {
+   "circuit_id":"162671103",
+   "circuit_name":"WESTLEY 1103"
+  },
+  {
+   "circuit_id":"182031104",
+   "circuit_name":"KING CITY 1104"
+  },
+  {
+   "circuit_id":"182391103",
+   "circuit_name":"OILFIELDS 1103"
+  },
+  {
+   "circuit_id":"182811103",
+   "circuit_name":"SISQUOC 1103"
+  },
+  {
+   "circuit_id":"182981102",
+   "circuit_name":"JOLON 1102"
+  },
+  {
+   "circuit_id":"182981103",
+   "circuit_name":"JOLON 1103"
+  },
+  {
+   "circuit_id":"252381105",
+   "circuit_name":"COALINGA NO 2 1105"
+  },
+  {
+   "circuit_id":"253591103",
+   "circuit_name":"CANTUA 1103"
+  },
+  {
+   "circuit_id":"253671103",
+   "circuit_name":"PANOCHE 1103"
+  }
+ ],
+ "PG&E PSPS Event 01/13/25":[
+  {
+   "circuit_id":"252931102",
+   "circuit_name":"TEJON 1102"
+  },
+  {
+   "circuit_id":"253911104",
+   "circuit_name":"LAMONT 1104"
+  }
+ ],
+ "PG&E PSPS Event 01/20/25":[
+  {
+   "circuit_id":"252931102",
+   "circuit_name":"TEJON 1102"
+  },
+  {
+   "circuit_id":"253911104",
+   "circuit_name":"LAMONT 1104"
+  }
+ ],
+ "PG&E PSPS Event 06/19/25":[
+  {
+   "circuit_id":"012022213",
+   "circuit_name":"CLAYTON 2213"
+  },
+  {
+   "circuit_id":"013751102",
+   "circuit_name":"VASCO 1102"
+  },
+  {
+   "circuit_id":"013751103",
+   "circuit_name":"VASCO 1103"
+  },
+  {
+   "circuit_id":"014402108",
+   "circuit_name":"LAS POSITAS 2108"
+  },
+  {
+   "circuit_id":"014402110",
+   "circuit_name":"LAS POSITAS 2110"
+  },
+  {
+   "circuit_id":"014422109",
+   "circuit_name":"CAYETANO 2109"
+  },
+  {
+   "circuit_id":"014592105",
+   "circuit_name":"BRENTWOOD 2105"
+  },
+  {
+   "circuit_id":"014592110",
+   "circuit_name":"BRENTWOOD 2110"
+  },
+  {
+   "circuit_id":"014652106",
+   "circuit_name":"TIDEWATER 2106"
+  },
+  {
+   "circuit_id":"062051102",
+   "circuit_name":"WILLIAMS 1102"
+  },
+  {
+   "circuit_id":"062541102",
+   "circuit_name":"MERIDIAN 1102"
+  },
+  {
+   "circuit_id":"062881102",
+   "circuit_name":"MAXWELL 1102"
+  },
+  {
+   "circuit_id":"062881105",
+   "circuit_name":"MAXWELL 1105"
+  },
+  {
+   "circuit_id":"102601101",
+   "circuit_name":"GLENN 1101"
+  },
+  {
+   "circuit_id":"102781101",
+   "circuit_name":"ELK CREEK 1101"
+  },
+  {
+   "circuit_id":"102931101",
+   "circuit_name":"COTTONWOOD 1101"
+  },
+  {
+   "circuit_id":"102931103",
+   "circuit_name":"COTTONWOOD 1103"
+  },
+  {
+   "circuit_id":"103142102",
+   "circuit_name":"LOGAN CREEK 2102"
+  },
+  {
+   "circuit_id":"103331102",
+   "circuit_name":"CORNING 1102"
+  },
+  {
+   "circuit_id":"103381101",
+   "circuit_name":"FRENCH GULCH 1101"
+  },
+  {
+   "circuit_id":"103381102",
+   "circuit_name":"FRENCH GULCH 1102"
+  },
+  {
+   "circuit_id":"103401101",
+   "circuit_name":"GIRVAN 1101"
+  },
+  {
+   "circuit_id":"103401102",
+   "circuit_name":"GIRVAN 1102"
+  },
+  {
+   "circuit_id":"103451101",
+   "circuit_name":"KESWICK 1101"
+  },
+  {
+   "circuit_id":"103521102",
+   "circuit_name":"OREGON TRAIL 1102"
+  },
+  {
+   "circuit_id":"103521103",
+   "circuit_name":"OREGON TRAIL 1103"
+  },
+  {
+   "circuit_id":"103541103",
+   "circuit_name":"RED BLUFF 1103"
+  },
+  {
+   "circuit_id":"103571105",
+   "circuit_name":"TYLER 1105"
+  },
+  {
+   "circuit_id":"103611101",
+   "circuit_name":"WILDWOOD 1101"
+  },
+  {
+   "circuit_id":"153751103",
+   "circuit_name":"PEASE 1103"
+  },
+  {
+   "circuit_id":"153771104",
+   "circuit_name":"LIVE OAK 1104"
+  },
+  {
+   "circuit_id":"162671101",
+   "circuit_name":"WESTLEY 1101"
+  },
+  {
+   "circuit_id":"162671103",
+   "circuit_name":"WESTLEY 1103"
+  },
+  {
+   "circuit_id":"162771101",
+   "circuit_name":"LAMMERS 1101"
+  },
+  {
+   "circuit_id":"162771108",
+   "circuit_name":"LAMMERS 1108"
+  },
+  {
+   "circuit_id":"162881106",
+   "circuit_name":"TRACY 1106"
+  },
+  {
+   "circuit_id":"163091104",
+   "circuit_name":"CARBONA 1104"
+  },
+  {
+   "circuit_id":"163111102",
+   "circuit_name":"GUSTINE 1102"
+  },
+  {
+   "circuit_id":"163741102",
+   "circuit_name":"HERDLYN 1102"
+  },
+  {
+   "circuit_id":"163741103",
+   "circuit_name":"HERDLYN 1103"
+  },
+  {
+   "circuit_id":"182031102",
+   "circuit_name":"KING CITY 1102"
+  },
+  {
+   "circuit_id":"182031103",
+   "circuit_name":"KING CITY 1103"
+  },
+  {
+   "circuit_id":"182031104",
+   "circuit_name":"KING CITY 1104"
+  },
+  {
+   "circuit_id":"182031105",
+   "circuit_name":"KING CITY 1105"
+  },
+  {
+   "circuit_id":"182031105",
+   "circuit_name":"LOS OSITOS 1105"
+  },
+  {
+   "circuit_id":"182031106",
+   "circuit_name":"KING CITY 1106"
+  },
+  {
+   "circuit_id":"182052101",
+   "circuit_name":"SOLEDAD 2101"
+  },
+  {
+   "circuit_id":"182052102",
+   "circuit_name":"SOLEDAD 2102"
+  },
+  {
+   "circuit_id":"182082101",
+   "circuit_name":"LOS OSITOS 2101"
+  },
+  {
+   "circuit_id":"182082102",
+   "circuit_name":"LOS OSITOS 2102"
+  },
+  {
+   "circuit_id":"182082103",
+   "circuit_name":"LOS OSITOS 2103"
+  },
+  {
+   "circuit_id":"182191101",
+   "circuit_name":"SAN ARDO 1101"
+  },
+  {
+   "circuit_id":"182191102",
+   "circuit_name":"SAN ARDO 1102"
+  },
+  {
+   "circuit_id":"182371111",
+   "circuit_name":"LAURELES 1111"
+  },
+  {
+   "circuit_id":"182391102",
+   "circuit_name":"OILFIELDS 1102"
+  },
+  {
+   "circuit_id":"182391103",
+   "circuit_name":"OILFIELDS 1103"
+  },
+  {
+   "circuit_id":"182492101",
+   "circuit_name":"HOLLISTER 2101"
+  },
+  {
+   "circuit_id":"182492102",
+   "circuit_name":"HOLLISTER 2102"
+  },
+  {
+   "circuit_id":"182561101",
+   "circuit_name":"CHOLAME 1101"
+  },
+  {
+   "circuit_id":"182611103",
+   "circuit_name":"PASO ROBLES 1103"
+  },
+  {
+   "circuit_id":"182661105",
+   "circuit_name":"SAN MIGUEL 1105"
+  },
+  {
+   "circuit_id":"182661106",
+   "circuit_name":"SAN MIGUEL 1106"
+  },
+  {
+   "circuit_id":"182661107",
+   "circuit_name":"SAN MIGUEL 1107"
+  },
+  {
+   "circuit_id":"182681102",
+   "circuit_name":"ZACA 1102"
+  },
+  {
+   "circuit_id":"182721101",
+   "circuit_name":"SANTA YNEZ 1101"
+  },
+  {
+   "circuit_id":"182721102",
+   "circuit_name":"SANTA YNEZ 1102"
+  },
+  {
+   "circuit_id":"182721104",
+   "circuit_name":"SANTA YNEZ 1104"
+  },
+  {
+   "circuit_id":"182981102",
+   "circuit_name":"JOLON 1102"
+  },
+  {
+   "circuit_id":"183041101",
+   "circuit_name":"BUELLTON 1101"
+  },
+  {
+   "circuit_id":"183041102",
+   "circuit_name":"BUELLTON 1102"
+  },
+  {
+   "circuit_id":"183052109",
+   "circuit_name":"TEMPLETON 2109"
+  },
+  {
+   "circuit_id":"183052110",
+   "circuit_name":"OILFIELDS 2110"
+  },
+  {
+   "circuit_id":"183052110",
+   "circuit_name":"TEMPLETON 2110"
+  },
+  {
+   "circuit_id":"252021101",
+   "circuit_name":"ANTELOPE 1101"
+  },
+  {
+   "circuit_id":"252381105",
+   "circuit_name":"COALINGA NO 2 1105"
+  },
+  {
+   "circuit_id":"252931102",
+   "circuit_name":"TEJON 1102"
+  },
+  {
+   "circuit_id":"253451101",
+   "circuit_name":"DEVILS DEN 1101"
+  },
+  {
+   "circuit_id":"253591102",
+   "circuit_name":"CANTUA 1102"
+  },
+  {
+   "circuit_id":"253591103",
+   "circuit_name":"CANTUA 1103"
+  },
+  {
+   "circuit_id":"254051104",
+   "circuit_name":"SANTA NELLA 1104"
+  },
+  {
+   "circuit_id":"255002101",
+   "circuit_name":"AVENAL 2101"
+  }
+ ],
+ "PG&E PSPS Event 01/22/25":[
+  {
+   "circuit_id":"252931102",
+   "circuit_name":"TEJON 1102"
+  },
+  {
+   "circuit_id":"253911104",
+   "circuit_name":"LAMONT 1104"
+  }
+ ]
+}
