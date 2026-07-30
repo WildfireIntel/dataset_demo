@@ -289,7 +289,7 @@
     PSPS_EVENTS_LAYER.key,
     FIRE_WEATHER_LAYER.key
   ]);
-  let historicalChartType = "bar";
+  let historicalChartType = "timeseries";
   let historicalMapChartInitialized = false;
   let historicalPspsGeoJson = null;
   let historicalPspsLayer = null;
@@ -1011,6 +1011,65 @@
     historicalUtilityFilter.value = utilities.includes(previous) ? previous : "";
   };
 
+  const formatIsoDateLocal = (date) => {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const getWeekIndexInYear = (dateStr, year) => {
+    const date = parseIsoDate(dateStr);
+    if (!date || date.getFullYear() !== year) return null;
+    const start = new Date(year, 0, 1);
+    const dayIndex = Math.round((date - start) / 86400000);
+    if (dayIndex < 0) return null;
+    return Math.floor(dayIndex / 7);
+  };
+
+  const getWeekBinMeta = (year) => {
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31);
+    const dayCount = Math.round((yearEnd - yearStart) / 86400000) + 1;
+    const weekCount = Math.ceil(dayCount / 7);
+    const weekStarts = [];
+    const weekLabels = [];
+    for (let w = 0; w < weekCount; w += 1) {
+      const start = new Date(year, 0, 1 + w * 7);
+      const end = new Date(year, 0, Math.min(dayCount, 1 + w * 7 + 6));
+      weekStarts.push(formatIsoDateLocal(start));
+      weekLabels.push(`${formatIsoDateLocal(start)} – ${formatIsoDateLocal(end)}`);
+    }
+    return { weekCount, weekStarts, weekLabels };
+  };
+
+  const buildWeeklyCountsByDataset = (recordsByDataset, year) => {
+    const { weekCount, weekStarts, weekLabels } = getWeekBinMeta(year);
+    const series = {};
+    Object.keys(HISTORICAL_DATASETS).forEach((key) => {
+      const counts = new Array(weekCount).fill(0);
+      (recordsByDataset[key] || []).forEach((record) => {
+        const weekIndex = getWeekIndexInYear(record.date, year);
+        if (weekIndex == null || weekIndex < 0 || weekIndex >= weekCount) return;
+        counts[weekIndex] += 1;
+      });
+      series[key] = counts;
+    });
+    return { weekStarts, weekLabels, series };
+  };
+
+  const getChartDayMarkerDate = (year) => {
+    const fromWeather = getWeatherDisplayDate();
+    if (fromWeather) return fromWeather;
+    if (!Number.isFinite(year)) return null;
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31);
+    const dayCount = Math.round((yearEnd - yearStart) / 86400000) + 1;
+    const dayIndex = Math.max(0, Math.min(dayCount - 1, Math.floor(weatherAnimDayT) || 0));
+    return formatIsoDateLocal(new Date(year, 0, 1 + dayIndex));
+  };
+
   const renderHistoricalChart = (countsByDataset, year) => {
     if (!historicalSummaryChartEl || typeof Plotly === "undefined") return;
     const entries = Object.entries(HISTORICAL_DATASETS).filter(([key]) => historicalActiveLayers.has(key));
@@ -1023,11 +1082,100 @@
       font: { family: "Plus Jakarta Sans, -apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif", size: 12, color: "#1e293b" },
       paper_bgcolor: "transparent",
       plot_bgcolor: "transparent",
-      showlegend: historicalChartType === "donut"
+      showlegend: historicalChartType === "donut" || historicalChartType === "timeseries"
     };
 
     let data;
-    if (historicalChartType === "donut") {
+    if (historicalChartType === "timeseries") {
+      // Time series ignores the day scrubber filter so the full-year shape stays
+      // visible; the vertical marker shows the current weather day instead.
+      const filteredForSeries = getFilteredHistoricalPointRecords(year, { applyDay: false });
+      const baselineForAxis = getFilteredHistoricalPointRecords(year, {
+        applyCounty: false,
+        applyUtility: false,
+        applyDay: false
+      });
+      const plotted = buildWeeklyCountsByDataset(filteredForSeries, year);
+      const baseline = buildWeeklyCountsByDataset(baselineForAxis, year);
+      let yMax = 1;
+      entries.forEach(([key]) => {
+        (baseline.series[key] || []).forEach((count) => {
+          if (count > yMax) yMax = count;
+        });
+      });
+      yMax = Math.max(1, Math.ceil(yMax * 1.1));
+
+      layout.margin = { t: 28, r: 16, b: 40, l: 48 };
+      layout.legend = {
+        orientation: "h",
+        yanchor: "bottom",
+        y: 1.02,
+        x: 0,
+        xanchor: "left",
+        font: { size: 11 }
+      };
+      layout.xaxis = {
+        type: "date",
+        gridcolor: "#e2e8f0",
+        zeroline: false,
+        automargin: true,
+        fixedrange: true,
+        tickformat: "%b",
+        hoverformat: "%Y-%m-%d"
+      };
+      layout.yaxis = {
+        title: { text: "Events / week", standoff: 6 },
+        gridcolor: "#e2e8f0",
+        zeroline: false,
+        automargin: true,
+        fixedrange: true,
+        range: [0, yMax]
+      };
+
+      const markerDate = getChartDayMarkerDate(year);
+      layout.shapes = markerDate
+        ? [
+            {
+              type: "line",
+              xref: "x",
+              yref: "paper",
+              x0: markerDate,
+              x1: markerDate,
+              y0: 0,
+              y1: 1,
+              line: { color: "#0f172a", width: 1.5, dash: "dot" }
+            }
+          ]
+        : [];
+      layout.annotations = markerDate
+        ? [
+            {
+              x: markerDate,
+              y: 1,
+              xref: "x",
+              yref: "paper",
+              text: markerDate,
+              showarrow: false,
+              xanchor: "left",
+              yanchor: "bottom",
+              font: { size: 10, color: "#475569" },
+              xshift: 4
+            }
+          ]
+        : [];
+
+      data = entries.map(([key, config], idx) => ({
+        type: "scatter",
+        mode: "lines+markers",
+        name: shortLabels[idx],
+        x: plotted.weekStarts,
+        y: plotted.series[key] || [],
+        customdata: plotted.weekLabels,
+        line: { color: colors[idx], width: 2 },
+        marker: { color: colors[idx], size: 5 },
+        hovertemplate: `%{fullData.name}<br>%{customdata}<br>%{y} events<extra></extra>`
+      }));
+    } else if (historicalChartType === "donut") {
       layout.margin = { t: 10, r: 110, b: 10, l: 10 };
       layout.legend = {
         orientation: "v",
@@ -1076,6 +1224,46 @@
     layout.autosize = false;
 
     Plotly.react(historicalSummaryChartEl, data, layout, { displayModeBar: false, responsive: true });
+  };
+
+  const updateHistoricalChartDayMarker = () => {
+    if (historicalChartType !== "timeseries") return;
+    if (!historicalSummaryChartEl || typeof Plotly === "undefined") return;
+    if (!historicalSummaryChartEl.data) return;
+    const year = getCurrentHistoricalYear();
+    const markerDate = getChartDayMarkerDate(year);
+    Plotly.relayout(historicalSummaryChartEl, {
+      shapes: markerDate
+        ? [
+            {
+              type: "line",
+              xref: "x",
+              yref: "paper",
+              x0: markerDate,
+              x1: markerDate,
+              y0: 0,
+              y1: 1,
+              line: { color: "#0f172a", width: 1.5, dash: "dot" }
+            }
+          ]
+        : [],
+      annotations: markerDate
+        ? [
+            {
+              x: markerDate,
+              y: 1,
+              xref: "x",
+              yref: "paper",
+              text: markerDate,
+              showarrow: false,
+              xanchor: "left",
+              yanchor: "bottom",
+              font: { size: 10, color: "#475569" },
+              xshift: 4
+            }
+          ]
+        : []
+    });
   };
 
   const parseIsoDate = (value) => {
@@ -1139,11 +1327,14 @@
     );
   };
 
-  const getFilteredHistoricalPointRecords = (year) => {
-    const selectedCounty = getSelectedHistoricalCounty();
+  const getFilteredHistoricalPointRecords = (year, options = {}) => {
+    const applyCounty = options.applyCounty !== false;
+    const applyUtility = options.applyUtility !== false;
+    const applyDay = options.applyDay !== false;
+    const selectedCounty = applyCounty ? getSelectedHistoricalCounty() : "";
     const countyKey = selectedCounty ? selectedCounty.toLowerCase() : "";
-    const selectedUtility = getSelectedHistoricalUtility();
-    const dayActive = weatherDayFilterActive;
+    const selectedUtility = applyUtility ? getSelectedHistoricalUtility() : "";
+    const dayActive = applyDay && weatherDayFilterActive;
     const currentDate = dayActive ? getWeatherDisplayDate() : null;
     const byDataset = {};
 
@@ -1342,7 +1533,7 @@
     if (historicalChartToggle) {
       historicalChartToggle.querySelectorAll(".sfps-chart-toggle-btn").forEach((button) => {
         button.addEventListener("click", () => {
-          historicalChartType = button.dataset.chartType || "bar";
+          historicalChartType = button.dataset.chartType || "timeseries";
           historicalChartToggle.querySelectorAll(".sfps-chart-toggle-btn").forEach((btn) => {
             btn.classList.toggle("is-active", btn === button);
           });
@@ -1547,6 +1738,7 @@
     }
     if (weatherDateEl) weatherDateEl.textContent = dateLabel;
     updateWeatherAttribution(dateLabel);
+    updateHistoricalChartDayMarker();
   };
 
   const setWeatherLoadingUI = (message = "Loading…") => {
