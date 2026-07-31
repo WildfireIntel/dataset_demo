@@ -208,7 +208,8 @@
     epss: {
       label: "EPSS Outage Events",
       chartShortLabel: "EPSS",
-      color: "#1d6fa5", // var(--sfps-blue)
+      color: "#7c3aed", // var(--sfps-mr)
+      highlightColor: "#5b21b6",
       dataUrl: `${basePath}/assets/data/epss_outages.csv`,
       cluster: false,
       sampleData: [
@@ -703,14 +704,32 @@
       const props = safeFeature.properties || {};
       const circuitName = props.circuit_name || records[0]?.circuit || circuitId;
 
+      const baseStyle = {
+        color: config.color,
+        weight: 3,
+        opacity: 0.95,
+        fill: false
+      };
+      const highlightStyle = {
+        color: config.highlightColor || config.color,
+        weight: 4.5,
+        opacity: 1,
+        fill: false
+      };
+
       let layer;
       try {
         layer = L.geoJSON(safeFeature, {
-          style: {
-            color: config.color,
-            weight: 3,
-            opacity: 0.95,
-            fill: false
+          style: baseStyle,
+          onEachFeature(_feature, pathLayer) {
+            pathLayer.on({
+              mouseover(e) {
+                e.target.setStyle(highlightStyle);
+              },
+              mouseout(e) {
+                e.target.setStyle(baseStyle);
+              }
+            });
           }
         });
       } catch (error) {
