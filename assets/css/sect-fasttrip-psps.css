@@ -999,6 +999,20 @@ article.page:has(#sect-fasttrip-psps) .page__content {
   margin-right: 0.35rem;
 }
 
+.sfps-hftd-legend {
+  margin-top: 0.65rem;
+  padding: 0.55rem 0.75rem 0.45rem;
+  border-top: 1px solid var(--sfps-border-2);
+}
+
+.sfps-hftd-legend .sfps-weather-strip-legend {
+  margin-top: 0;
+}
+
+.sfps-hftd-legend .sfps-weather-strip-attribution {
+  margin-top: 0.4rem;
+}
+
 .sfps-weather-strip {
   margin-top: 0.65rem;
   padding: 0.65rem 0.75rem 0.55rem;

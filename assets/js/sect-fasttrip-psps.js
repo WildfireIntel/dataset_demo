@@ -31,6 +31,7 @@
   const weatherAttributionEl = document.getElementById("historical-weather-attribution");
   const weatherSourceInfoBtn = document.getElementById("historical-weather-source-info");
   const weatherSourcePopover = document.getElementById("historical-weather-source-popover");
+  const hftdLegendEl = document.getElementById("historical-hftd-legend");
 
   const hyperparams = [
     "B_budget",
@@ -273,6 +274,39 @@
     color: "#e34a33"
   };
 
+  // CPUC High Fire Threat District — static background polygons (not charted).
+  // Tier fills keyed on properties.HFTD ("Tier 2" / "Tier 3").
+  const HFTD_LAYER = {
+    key: "hftd",
+    label: "CPUC HFTD",
+    color: "#d97706",
+    dataUrl: `${basePath}/assets/data/hftd.geojson`,
+    defaultActive: false,
+    tierStyles: {
+      "Tier 2": {
+        color: "#ca8a04",
+        weight: 0.75,
+        opacity: 0.45,
+        fillColor: "#fde68a",
+        fillOpacity: 0.25
+      },
+      "Tier 3": {
+        color: "#92400e",
+        weight: 0.75,
+        opacity: 0.5,
+        fillColor: "#b45309",
+        fillOpacity: 0.22
+      }
+    },
+    fallbackStyle: {
+      color: "#a16207",
+      weight: 0.75,
+      opacity: 0.4,
+      fillColor: "#d97706",
+      fillOpacity: 0.15
+    }
+  };
+
   // Contour thresholds in encoded space (HDW = value * 2). Use 1 instead of 0
   // for Low so empty (0) cells outside California stay outside the contour.
   const WEATHER_THRESHOLD_BANDS = [
@@ -289,11 +323,14 @@
     ...Object.keys(HISTORICAL_DATASETS),
     PSPS_EVENTS_LAYER.key,
     FIRE_WEATHER_LAYER.key
+    // HFTD off by default — not included
   ]);
   let historicalChartType = "timeseries";
   let historicalMapChartInitialized = false;
   let historicalPspsGeoJson = null;
   let historicalPspsLayer = null;
+  let historicalHftdGeoJson = null;
+  let historicalHftdLayer = null;
   let pspsEventCircuitsByName = null;
   let epssCircuitsById = null;
   let historicalIouTerritoriesGeoJson = null;
@@ -417,6 +454,33 @@
     } catch (error) {
       historicalPspsGeoJson = { type: "FeatureCollection", features: [] };
     }
+  };
+
+  const loadHistoricalHftd = async () => {
+    try {
+      const response = await fetch(HFTD_LAYER.dataUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      historicalHftdGeoJson = await response.json();
+      const n = historicalHftdGeoJson?.features?.length || 0;
+      console.log(`HFTD: ${n} features loaded`);
+    } catch (error) {
+      console.warn(`HFTD: failed to load ${HFTD_LAYER.dataUrl}:`, error);
+      historicalHftdGeoJson = { type: "FeatureCollection", features: [] };
+    }
+  };
+
+  const styleHftdFeature = (feature) => {
+    const tier = feature?.properties?.HFTD;
+    return HFTD_LAYER.tierStyles[tier] || HFTD_LAYER.fallbackStyle;
+  };
+
+  const syncHistoricalHftdLayer = () => {
+    const showHftd = historicalActiveLayers.has(HFTD_LAYER.key);
+    if (hftdLegendEl) hftdLegendEl.hidden = !showHftd;
+    if (!historicalHftdLayer) return;
+    historicalHftdLayer.clearLayers();
+    if (!showHftd || !historicalHftdGeoJson) return;
+    historicalHftdLayer.addData(historicalHftdGeoJson);
   };
 
   const loadEpssCircuits = async () => {
@@ -824,13 +888,14 @@
 
   const appendHistoricalLayerToggle = (key, config) => {
     if (!historicalLayerToggles) return;
+    const isOn = historicalActiveLayers.has(key);
     const label = document.createElement("label");
-    label.className = "sfps-layer-toggle is-active";
+    label.className = `sfps-layer-toggle${isOn ? " is-active" : ""}`;
     label.dataset.layerKey = key;
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.checked = true;
+    checkbox.checked = isOn;
     checkbox.addEventListener("change", () => {
       if (checkbox.checked) {
         historicalActiveLayers.add(key);
@@ -862,6 +927,7 @@
     });
     appendHistoricalLayerToggle(PSPS_EVENTS_LAYER.key, PSPS_EVENTS_LAYER);
     appendHistoricalLayerToggle(FIRE_WEATHER_LAYER.key, FIRE_WEATHER_LAYER);
+    appendHistoricalLayerToggle(HFTD_LAYER.key, HFTD_LAYER);
   };
 
   const createHistoricalClusterGroup = (config) => {
@@ -895,6 +961,19 @@
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 12
+    }).addTo(historicalMapInstance);
+
+    // Above basemap tiles (200), below overlay pane (400) so HFTD stays under
+    // weather, PSPS, circuits, and point markers regardless of bringToBack().
+    if (!historicalMapInstance.getPane("hftdPane")) {
+      historicalMapInstance.createPane("hftdPane");
+      historicalMapInstance.getPane("hftdPane").style.zIndex = 350;
+    }
+
+    historicalHftdLayer = L.geoJSON(null, {
+      pane: "hftdPane",
+      style: styleHftdFeature,
+      interactive: false
     }).addTo(historicalMapInstance);
 
     historicalWeatherLayer = L.geoJSON(null, {
@@ -1449,6 +1528,8 @@
       }
     }
 
+    syncHistoricalHftdLayer();
+
     renderHistoricalChart(countsByDataset, year);
     drawWeatherContours();
     updateHistoricalUtilityTerritoryView();
@@ -1527,6 +1608,7 @@
     const [pointResults] = await Promise.all([
       Promise.all(keys.map((key) => loadHistoricalDatasetRecords(key))),
       loadHistoricalPspsEvents(),
+      loadHistoricalHftd(),
       loadPspsEventCircuits(),
       loadEpssCircuits(),
       loadIouTerritories()
